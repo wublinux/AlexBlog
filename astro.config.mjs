@@ -76,13 +76,11 @@ function remarkGitHubAlertFallback() {
 	};
 }
 
-const REPO_BASE = '/DansBlog/';
 const isCloudflarePages = Boolean(process.env.CF_PAGES);
-const isGitHubPages = Boolean(process.env.GITHUB_ACTIONS) || process.env.DEPLOY_TARGET === 'github-pages';
 const isProduction = process.env.NODE_ENV === 'production';
-// Cloudflare serves from "/", while GitHub Pages needs the repository subpath.
-const runtimeBase = isCloudflarePages ? '/' : isGitHubPages && isProduction ? REPO_BASE : '/';
-const runtimeSite = 'https://danarnoux.com';
+// Cloudflare serves from "/", local dev also uses "/".
+const runtimeBase = isCloudflarePages ? '/' : '/';
+const runtimeSite = 'https://alexblog.pages.dev';
 
 /*
  * Rewrites markdown `<img src="/image/...">` to include the active base path.
@@ -126,7 +124,7 @@ export default defineConfig({
 		mdx(),
 		sitemap({
 			filter: (page) => {
-				if (page === 'https://danarnoux.com/admin/' || page === 'https://danarnoux.com/important/') {
+				if (page.startsWith('https://alexblog.pages.dev/admin/')) {
 					return false;
 				}
 				return !/^https:\/\/danarnoux\.com\/blog\/page\/\d+\/$/.test(page);

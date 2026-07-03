@@ -2,7 +2,7 @@
 import { Image } from 'astro:assets';
 import type { CollectionEntry } from 'astro:content';
 import BaseHead from '../components/BaseHead.astro';
-import Comment from '../components/Comment.astro';
+
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Header from '../components/Header.astro';
@@ -276,7 +276,7 @@ const charsLabel = chars.toLocaleString('en-US');
 							)
 						}
 
-						{slug && <Comment postSlug={slug} />}
+						
 					</main>
 
 					<div class="hidden lg:block" aria-hidden="true"></div>
@@ -856,7 +856,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				if (window.__activePostViewsSlug === slug) return;
 				window.__activePostViewsSlug = slug;
 
-				const apiBase = window.__API_BASE || 'https://api.danarnoux.com';
+				const apiBase = window.__API_BASE || 'https://api.example.com';
 				const sessionKey = `blog_viewed:${slug}`;
 				const hasViewedInSession = (() => {
 					try {
@@ -903,7 +903,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				const roots = Array.from(document.querySelectorAll('[data-related-post-views-root]'));
 				if (!roots.length) return;
 
-				const apiBase = window.__API_BASE || 'https://api.danarnoux.com';
+				const apiBase = window.__API_BASE || 'https://api.example.com';
 				const uniqueKeys = [...new Set(
 					roots
 						.map((root) => root.getAttribute('data-related-post-views-root') || '')
