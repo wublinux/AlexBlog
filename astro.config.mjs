@@ -80,7 +80,7 @@ const isCloudflarePages = Boolean(process.env.CF_PAGES);
 const isProduction = process.env.NODE_ENV === 'production';
 // Cloudflare serves from "/", local dev also uses "/".
 const runtimeBase = isCloudflarePages ? '/' : '/';
-const runtimeSite = 'https://alexblog.pages.dev';
+const runtimeSite = 'https://letsgogogogogo.pp.ua';
 
 /*
  * Rewrites markdown `<img src="/image/...">` to include the active base path.
