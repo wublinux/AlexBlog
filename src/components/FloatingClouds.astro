@@ -1,0 +1,168 @@
+---
+/*
+ * Floating clouds and stars for the homepage side margins (xl viewports and up).
+ * Soft, dreamy clouds with tiny twinkling stars — a kawaii/anime sky decoration
+ * that sits behind content like the original Parthenon columns.
+ * Stroke-only style preserved, but themed for a sakura blog.
+ */
+
+// One cloud cluster as SVG paths (viewBox 0 0 200 300)
+const CLOUD_PATHS = `
+	<!-- Main cloud body -->
+	<path d="M30 200 Q30 180 50 175 Q55 155 75 150 Q85 130 105 128 Q120 115 140 120 Q155 112 170 125 Q190 130 190 150 Q200 160 195 175 Q198 190 185 195 Q180 205 165 205 L55 205 Q35 205 30 200Z" class="cloud-stroke" vector-effect="non-scaling-stroke" />
+	<!-- Inner highlights -->
+	<path d="M65 175 Q75 160 90 158" class="cloud-faint" vector-effect="non-scaling-stroke" />
+	<path d="M130 148 Q145 138 160 145" class="cloud-faint" vector-effect="non-scaling-stroke" />
+`;
+
+// Small cloud variant
+const SMALL_CLOUD_PATHS = `
+	<path d="M40 180 Q40 168 55 165 Q60 152 72 150 Q82 140 95 143 Q108 138 115 148 Q125 152 122 165 Q128 172 120 178 Q115 182 100 182 L55 182 Q42 182 40 180Z" class="cloud-stroke" vector-effect="non-scaling-stroke" />
+`;
+
+// Star positions (percent)
+const stars = [
+	{ left: 20, top: 15, delay: '0s', dur: '3.2s' },
+	{ left: 70, top: 25, delay: '1.5s', dur: '2.8s' },
+	{ left: 45, top: 45, delay: '0.8s', dur: '4.0s' },
+	{ left: 85, top: 55, delay: '2.2s', dur: '3.5s' },
+	{ left: 30, top: 70, delay: '1.0s', dur: '3.0s' },
+	{ left: 60, top: 80, delay: '2.8s', dur: '2.5s' },
+	{ left: 15, top: 90, delay: '0.5s', dur: '3.8s' },
+];
+
+const sides = ['left', 'right'];
+---
+
+{
+	sides.map((side) => (
+		<div class={`cloud-grp cloud-grp-${side}`} aria-hidden="true">
+			<div class="cloud-main">
+				<svg viewBox="0 0 200 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" set:html={CLOUD_PATHS} />
+			</div>
+			<div class="cloud-small">
+				<svg viewBox="0 0 200 300" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg" set:html={SMALL_CLOUD_PATHS} />
+			</div>
+			{stars.map((s) => (
+				<i class="cloud-star" style={`left:${s.left}%;top:${s.top}%;animation-delay:${s.delay};animation-duration:${s.dur}`} />
+			))}
+		</div>
+	))
+}
+
+<style is:global>
+	.cloud-grp {
+		position: fixed;
+		top: 5.5rem;
+		height: min(66vh, 700px);
+		width: clamp(96px, 10vw, 170px);
+		z-index: -1;
+		display: none;
+		pointer-events: none;
+		user-select: none;
+		color: rgba(255, 183, 197, 0.45);
+		--cloud-sakura: rgba(255, 183, 197, 0.6);
+	}
+
+	html.dark .cloud-grp {
+		color: rgba(255, 209, 220, 0.35);
+		--cloud-sakura: rgba(255, 209, 220, 0.5);
+	}
+
+	@media (min-width: 1280px) {
+		.cloud-grp {
+			display: block;
+			animation: cloud-fade-in 1100ms cubic-bezier(0.22, 1, 0.36, 1) 250ms both;
+		}
+	}
+
+	.cloud-grp-left {
+		left: calc(25vw - 256px);
+		transform: translateX(-50%);
+	}
+
+	.cloud-grp-right {
+		right: calc(25vw - 256px);
+		transform: translateX(50%);
+	}
+
+	.cloud-main {
+		position: absolute;
+		top: 10%;
+		width: 75%;
+		height: 60%;
+		opacity: 0.85;
+	}
+
+	.cloud-small {
+		position: absolute;
+		bottom: 15%;
+		left: 10%;
+		width: 55%;
+		height: 45%;
+		opacity: 0.45;
+	}
+
+	.cloud-stroke,
+	.cloud-faint {
+		fill: none;
+		stroke: var(--cloud-sakura);
+		stroke-linecap: round;
+	}
+
+	.cloud-stroke {
+		stroke-width: 1.5;
+	}
+
+	.cloud-faint {
+		stroke-width: 0.8;
+		opacity: 0.5;
+	}
+
+	/* Twinkling stars */
+	.cloud-star {
+		position: absolute;
+		width: 5px;
+		height: 5px;
+		border-radius: 50%;
+		background: var(--cloud-sakura);
+		opacity: 0.15;
+		animation: cloud-star-twinkle 3.8s ease-in-out infinite;
+	}
+
+	@keyframes cloud-star-twinkle {
+		0%, 100% {
+			opacity: 0.1;
+			transform: scale(0.6);
+		}
+		40% {
+			opacity: 0.9;
+			transform: scale(1.2);
+		}
+		60% {
+			opacity: 0.3;
+			transform: scale(0.8);
+		}
+	}
+
+	@keyframes cloud-fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.cloud-grp {
+			animation: none !important;
+			opacity: 1 !important;
+		}
+
+		.cloud-star {
+			animation: none !important;
+			opacity: 0.4 !important;
+		}
+	}
+</style>

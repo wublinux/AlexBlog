@@ -1,0 +1,249 @@
+---
+/*
+ * Sakura petal layer: soft cherry-blossom petals drifting down the page.
+ * Each petal is a rotated ellipse with a gentle sway, randomized spawn
+ * point, speed, rotation, and per-petal wobble so nothing lines up.
+ * Renders behind content (z-index -1), never captures pointer events,
+ * pauses in hidden tabs, and skips entirely for reduced motion.
+ */
+interface Props {
+	// Spawn-rate multiplier: 1 = full shower (about), ~0.45 = light drizzle (home).
+	density?: number;
+	// Height of the fall zone as a percentage of the viewport.
+	heightVh?: number;
+}
+
+const { density = 1, heightVh = 58 } = Astro.props as Props;
+---
+
+<div
+	class="sakura-layer"
+	data-sakura-layer
+	data-density={String(density)}
+	style={`height: ${heightVh}vh`}
+	aria-hidden="true"
+>
+	<canvas></canvas>
+</div>
+
+<style>
+	.sakura-layer {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: -1;
+		pointer-events: none;
+		-webkit-mask-image: linear-gradient(180deg, #000 70%, transparent);
+		mask-image: linear-gradient(180deg, #000 70%, transparent);
+	}
+
+	.sakura-layer canvas {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+</style>
+
+<script is:inline>
+	(() => {
+		const initSakura = () => {
+			const layer = document.querySelector('[data-sakura-layer]');
+			if (!layer || layer.dataset.bound === 'true') return;
+			layer.dataset.bound = 'true';
+
+			if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+			const canvas = layer.querySelector('canvas');
+			const ctx = canvas?.getContext('2d');
+			if (!ctx) return;
+
+			const density = Math.max(0.1, Number(layer.dataset.density) || 1);
+			const maxPetals = Math.max(6, Math.round(14 * density));
+
+			let width = 0;
+			let height = 0;
+
+			const resize = () => {
+				const dpr = Math.min(window.devicePixelRatio || 1, 2);
+				const rect = layer.getBoundingClientRect();
+				width = rect.width;
+				height = rect.height;
+				canvas.width = Math.max(1, Math.round(width * dpr));
+				canvas.height = Math.max(1, Math.round(height * dpr));
+				ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+			};
+
+			const petals = [];
+
+			const spawn = () => {
+				// Petal size and shape variation
+				const size = 6 + Math.random() * 8;
+				const isSmall = Math.random() < 0.3;
+				petals.push({
+					x: Math.random() * width,
+					y: -20 - Math.random() * 40,
+					vx: (Math.random() - 0.5) * 0.6,      // gentle horizontal drift
+					vy: 0.5 + Math.random() * 1.2,         // fall speed
+					rotation: Math.random() * Math.PI * 2,
+					rotationSpeed: (Math.random() - 0.5) * 0.03,
+					size: isSmall ? size * 0.6 : size,
+					aspectRatio: 0.5 + Math.random() * 0.3, // ellipse ratio
+					wobblePhase: Math.random() * Math.PI * 2,
+					wobbleSpeed: 0.01 + Math.random() * 0.02,
+					wobbleAmp: 0.3 + Math.random() * 0.8,
+					alpha: 0.4 + Math.random() * 0.4,
+					// Color variation: mostly pink, some white, some deeper pink
+					colorVariant: Math.random(),
+					fadeAt: height * (0.6 + Math.random() * 0.35),
+					life: 1,
+				});
+			};
+
+			// Draw a single petal shape (elliptical with a notch)
+			const drawPetal = (p) => {
+				ctx.save();
+				ctx.translate(p.x, p.y);
+				ctx.rotate(p.rotation);
+				ctx.scale(1, p.aspectRatio);
+				ctx.globalAlpha = p.alpha * p.life;
+
+				// Color based on variant
+				let r, g, b;
+				if (p.colorVariant < 0.55) {
+					// Standard sakura pink
+					r = 255; g = 183; b = 197;
+				} else if (p.colorVariant < 0.75) {
+					// Deeper pink
+					r = 255; g = 143; b = 171;
+				} else if (p.colorVariant < 0.9) {
+					// Very light pink / near white
+					r = 255; g = 225; b = 232;
+				} else {
+					// Soft white with pink tint
+					r = 255; g = 240; b = 245;
+				}
+
+				const dark = document.documentElement.classList.contains('dark');
+				if (dark) {
+					// Brighter/more visible in dark mode
+					r = Math.min(255, r + 20);
+				}
+
+				// Draw petal as an ellipse with a slight V-notch at the top
+				ctx.beginPath();
+				ctx.ellipse(0, 0, p.size, p.size * 0.7, 0, 0, Math.PI * 2);
+				ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 1)`;
+				ctx.fill();
+
+				// Subtle inner highlight
+				ctx.beginPath();
+				ctx.ellipse(-p.size * 0.15, -p.size * 0.1, p.size * 0.35, p.size * 0.25, -0.3, 0, Math.PI * 2);
+				ctx.fillStyle = `rgba(255, 255, 255, ${dark ? 0.25 : 0.35})`;
+				ctx.fill();
+
+				ctx.restore();
+			};
+
+			let lastTime = 0;
+			let spawnTimer = 0;
+			let nextSpawn = 300;
+			let rafId = 0;
+			let running = false;
+
+			const step = (now) => {
+				const dt = Math.min((now - lastTime) / 1000, 0.05);
+				lastTime = now;
+
+				spawnTimer += dt * 1000;
+				if (spawnTimer >= nextSpawn) {
+					spawnTimer = 0;
+					nextSpawn = (280 + Math.random() * 800) / density;
+					if (petals.length < maxPetals) spawn();
+				}
+
+				ctx.clearRect(0, 0, width, height);
+
+				for (let i = petals.length - 1; i >= 0; i--) {
+					const p = petals[i];
+
+					// Wobble sway
+					p.wobblePhase += p.wobbleSpeed;
+					const sway = Math.sin(p.wobblePhase) * p.wobbleAmp;
+
+					p.x += (p.vx + sway * 0.5) * dt * 60;
+					p.y += p.vy * dt * 60;
+					p.rotation += p.rotationSpeed;
+
+					// Fade near bottom
+					if (p.y > p.fadeAt) {
+						p.life -= dt * 1.2;
+					}
+
+					if (p.life <= 0 || p.y > height + 30) {
+						petals.splice(i, 1);
+						continue;
+					}
+
+					drawPetal(p);
+				}
+
+				rafId = requestAnimationFrame(step);
+			};
+
+			let destroyed = false;
+			const start = () => {
+				if (running || destroyed) return;
+				running = true;
+				lastTime = performance.now();
+				rafId = requestAnimationFrame(step);
+			};
+			const stop = () => {
+				running = false;
+				if (rafId) cancelAnimationFrame(rafId);
+				rafId = 0;
+			};
+
+			let resizeRaf = 0;
+			const onVisibility = () => {
+				if (document.hidden) stop();
+				else start();
+			};
+			const onResize = () => {
+				if (resizeRaf) return;
+				resizeRaf = requestAnimationFrame(() => {
+					resizeRaf = 0;
+					resize();
+				});
+			};
+
+			const destroy = () => {
+				destroyed = true;
+				stop();
+				if (resizeRaf) cancelAnimationFrame(resizeRaf);
+				resizeRaf = 0;
+				document.removeEventListener('visibilitychange', onVisibility);
+				window.removeEventListener('resize', onResize);
+				document.removeEventListener('astro:before-swap', destroy);
+			};
+
+			if (typeof window.__sakuraDestroy === 'function') window.__sakuraDestroy();
+			window.__sakuraDestroy = destroy;
+
+			resize();
+			start();
+			document.addEventListener('visibilitychange', onVisibility);
+			window.addEventListener('resize', onResize);
+			document.addEventListener('astro:before-swap', destroy);
+		};
+
+		window.__sakuraInit = initSakura;
+		if (!window.__sakuraPageLoadBound) {
+			window.__sakuraPageLoadBound = true;
+			document.addEventListener('astro:page-load', () => {
+				if (typeof window.__sakuraInit === 'function') window.__sakuraInit();
+			});
+		}
+		initSakura();
+	})();
+</script>

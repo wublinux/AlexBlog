@@ -4,9 +4,9 @@ import BaseHead from '../components/BaseHead.astro';
 import BrandMark from '../components/BrandMark.astro';
 import Footer from '../components/Footer.astro';
 import Header from '../components/Header.astro';
-import MeteorShower from '../components/MeteorShower.astro';
+import SakuraFaller from '../components/SakuraFaller.astro';
 import MobileDrawer from '../components/MobileDrawer.astro';
-import ParthenonColumns from '../components/ParthenonColumns.astro';
+import FloatingClouds from '../components/FloatingClouds.astro';
 import PostCard from '../components/PostCard.astro';
 import TerminalQuote from '../components/TerminalQuote.astro';
 import { GITHUB_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
@@ -17,7 +17,7 @@ const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
 	.slice(0, 6);
 
-const HOME_WALLPAPER = 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&q=80';
+const HOME_WALLPAPER = 'https://images.unsplash.com/photo-1526344966-89049886b28d?w=1200&q=80';
 ---
 
 <!doctype html>
@@ -26,8 +26,8 @@ const HOME_WALLPAPER = 'https://images.unsplash.com/photo-1517694712202-14dd9538
 		<BaseHead title={`${SITE_TITLE} - Tech, Notes & Life`} description="A personal blog about tech, notes, and life. 记录技术、笔记和生活。" />
 	</head>
 	<body>
-		<ParthenonColumns />
-		<MeteorShower density={0.45} heightVh={46} />
+		<FloatingClouds />
+		<SakuraFaller density={0.45} heightVh={46} />
 		<Header />
 		<MobileDrawer />
 		<main class="page-shell page-fade-in py-10 md:py-14" transition:name="page-main" transition:animate="fade">
@@ -190,8 +190,8 @@ const HOME_WALLPAPER = 'https://images.unsplash.com/photo-1517694712202-14dd9538
 					const draw = () => {
 						ctx.clearRect(0, 0, width, height);
 						const dark = document.documentElement.classList.contains('dark');
-						const base = dark ? '226, 190, 110' : '170, 118, 32';
-						const accent = dark ? '96, 165, 250' : '37, 99, 235';
+						const base = dark ? '255, 209, 220' : '255, 143, 171';
+						const accent = dark ? '196, 167, 231' : '147, 130, 220';
 						const rowGap = height / (ROWS + 1);
 
 						for (const d of dots) {

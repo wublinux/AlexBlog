@@ -1,12 +1,14 @@
 [
   { "text": "The only way to do great work is to love what you do.", "author": "Steve Jobs", "lang": "en", "tag": "inspiration" },
-  { "text": "Stay hungry, stay foolish.", "author": "Steve Jobs", "lang": "en", "tag": "inspiration" },
   { "text": "Talk is cheap. Show me the code.", "author": "Linus Torvalds", "lang": "en", "tag": "programming" },
-  { "text": "First, solve the problem. Then, write the code.", "author": "John Johnson", "lang": "en", "tag": "programming" },
-  { "text": "Simplicity is the ultimate sophistication.", "author": "Leonardo da Vinci", "lang": "en", "tag": "philosophy" },
-  { "text": "The best time to plant a tree was 20 years ago. The second best time is now.", "author": "Chinese Proverb", "lang": "en", "tag": "wisdom" },
+  { "text": "People's lives don't end when they die. It ends when they lose faith.", "author": "Itachi Uchiha, Naruto", "lang": "en", "tag": "anime" },
+  { "text": "Whatever you lose, you'll find it again. But what you throw away you'll never get back.", "author": "Kenshin Himura, Rurouni Kenshin", "lang": "en", "tag": "anime" },
+  { "text": "The world isn't perfect. But it's there for us, doing the best it can. That's what makes it so damn beautiful.", "author": "Roy Mustang, Fullmetal Alchemist", "lang": "en", "tag": "anime" },
+  { "text": "Nobody can go back and start a new beginning, but anyone can start today and make a new ending.", "author": "Maria Robinson", "lang": "en", "tag": "inspiration" },
   { "text": "路漫漫其修远兮，吾将上下而求索。", "author": "屈原《离骚》", "lang": "zh", "tag": "literature" },
   { "text": "学而不思则罔，思而不学则殆。", "author": "孔子《论语》", "lang": "zh", "tag": "literature" },
   { "text": "千里之行，始于足下。", "author": "老子《道德经》", "lang": "zh", "tag": "literature" },
+  { "text": "只要不放弃，那就不是终点。", "author": "《鬼灭之刃》", "lang": "zh", "tag": "anime" },
+  { "text": "不管前方的路有多苦，只要走的方向正确，不管多么崎岖不平，都比站在原地更接近幸福。", "author": "《千与千寻》", "lang": "zh", "tag": "anime" },
   { "text": "I write to understand, not to explain.", "author": "Alex", "lang": "en", "tag": "personal", "easterEgg": true }
 ]

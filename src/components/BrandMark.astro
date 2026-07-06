@@ -1,9 +1,9 @@
 ---
 /*
- * One-stroke signature "D" — the site's brand mark.
- * A single continuous path (down-stroke, return loop, belly, S-curve flourish)
- * drawn on with a stroke-dash animation at load and replayed on hover.
- * Designed iteratively at 120x100; path length ≈ 321.4 (see brand-draw keyframes).
+ * One-stroke signature "A" — the site's brand mark for Alex's Blog.
+ * A single continuous path drawing the letter A with a flourish,
+ * animated with a stroke-dash at load and replayed on hover.
+ * Designed at 120x100; path length ≈ 330 (see brand-draw keyframes).
  */
 interface Props {
 	class?: string;
@@ -20,18 +20,18 @@ const { class: className } = Astro.props as Props;
 >
 	<defs>
 		<linearGradient id="brand-mark-gold" x1="0" y1="0" x2="1" y2="1">
-			<stop offset="0" stop-color="#b47e24"></stop>
-			<stop offset="0.55" stop-color="#e2be6e"></stop>
-			<stop offset="1" stop-color="#966616"></stop>
+			<stop offset="0" stop-color="#c25b78"></stop>
+			<stop offset="0.55" stop-color="#ffd1dc"></stop>
+			<stop offset="1" stop-color="#8b3a5e"></stop>
 		</linearGradient>
 		<linearGradient id="brand-mark-gold-dark" x1="0" y1="0" x2="1" y2="1">
-			<stop offset="0" stop-color="#fad68c"></stop>
-			<stop offset="0.55" stop-color="#cda048"></stop>
-			<stop offset="1" stop-color="#ffe8b3"></stop>
+			<stop offset="0" stop-color="#ffe6f0"></stop>
+			<stop offset="0.55" stop-color="#ffb3c6"></stop>
+			<stop offset="1" stop-color="#fff0f5"></stop>
 		</linearGradient>
 	</defs>
 	<path
 		class="brand-mark-path"
-		d="M 40 12 C 33 32, 31 56, 33 74 C 34 80, 39 81.5, 41.5 76 C 46 57, 46 32, 44 16 C 43.5 11, 48 9, 54 11.5 C 76 19, 90 42, 81 63 C 74 77, 58 83, 47 79 C 52 82, 62 84, 74 80 C 88 75, 100 74, 110 70"
+		d="M 22 88 C 26 72, 34 48, 42 28 C 48 14, 54 8, 60 10 C 66 12, 70 22, 76 40 C 82 56, 88 72, 96 88 M 38 60 C 48 58, 60 56, 72 58 C 78 59, 86 62, 92 66"
 		stroke="url(#brand-mark-gold)"></path>
 </svg>

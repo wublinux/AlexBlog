@@ -1,7 +1,7 @@
 ---
 import Layout from '../layouts/BlogPost.astro';
-import GoldenSpiral from '../components/GoldenSpiral.astro';
-import MeteorShower from '../components/MeteorShower.astro';
+import SakuraSpiral from '../components/SakuraSpiral.astro';
+import SakuraFaller from '../components/SakuraFaller.astro';
 import TerminalQuote from '../components/TerminalQuote.astro';
 
 const nowText = 'Now: Building things, learning constantly, and documenting the process.';
@@ -14,8 +14,8 @@ const nowText = 'Now: Building things, learning constantly, and documenting the 
 	metaMode="page"
 >
 	<Fragment slot="background">
-		<GoldenSpiral />
-		<MeteorShower density={1.8} heightVh={60} />
+		<SakuraSpiral />
+		<SakuraFaller density={1.8} heightVh={60} />
 	</Fragment>
 	<div class="mx-auto max-w-3xl">
 		<p>

@@ -1398,14 +1398,14 @@ section {
 }
 
 [data-toc='drawer'] [data-toc-link][aria-current='true'] {
-	border-left-color: rgba(180, 126, 36, 0.85);
-	background: rgba(180, 126, 36, 0.09);
+	border-left-color: rgba(255, 183, 197, 0.85);
+	background: rgba(255, 183, 197, 0.09);
 	color: rgb(39 39 42);
 }
 
 html.dark [data-toc='drawer'] [data-toc-link][aria-current='true'] {
-	border-left-color: rgba(226, 190, 110, 0.8);
-	background: rgba(226, 190, 110, 0.1);
+	border-left-color: rgba(255, 209, 220, 0.8);
+	background: rgba(255, 209, 220, 0.1);
 	color: rgb(244 244 245);
 }
 
@@ -1428,8 +1428,8 @@ html.dark [data-toc='drawer'] [data-toc-link][aria-current='true'] {
 
 .field-input:focus {
 	outline: none;
-	border-color: rgba(180, 126, 36, 0.55);
-	box-shadow: 0 0 0 3px rgba(180, 126, 36, 0.13);
+	border-color: rgba(255, 183, 197, 0.55);
+	box-shadow: 0 0 0 3px rgba(255, 183, 197, 0.13);
 }
 
 html.dark .field-input {
@@ -1443,8 +1443,8 @@ html.dark .field-input::placeholder {
 }
 
 html.dark .field-input:focus {
-	border-color: rgba(226, 190, 110, 0.5);
-	box-shadow: 0 0 0 3px rgba(226, 190, 110, 0.13);
+	border-color: rgba(255, 209, 220, 0.5);
+	box-shadow: 0 0 0 3px rgba(255, 209, 220, 0.13);
 }
 
 .sr-only {
@@ -1482,11 +1482,11 @@ article :where(code, pre) {
 
 /* Text selection echoes the terminal-prompt gold so even highlighting feels branded. */
 ::selection {
-	background: rgba(226, 190, 110, 0.45);
+	background: rgba(255, 209, 220, 0.45);
 }
 
 html.dark ::selection {
-	background: rgba(205, 160, 72, 0.42);
+	background: rgba(255, 175, 195, 0.42);
 }
 
 /* Keyboard focus stays visible even though the custom cursor hides the pointer. */
@@ -1633,7 +1633,7 @@ html.theme-vt::view-transition-new(root) {
 		background: radial-gradient(
 			210px circle at var(--spot-x, 50%) var(--spot-y, 50%),
 			rgba(37, 99, 235, 0.5),
-			rgba(180, 126, 36, 0.22) 52%,
+			rgba(255, 183, 197, 0.22) 52%,
 			transparent 78%
 		);
 		-webkit-mask:
@@ -1669,7 +1669,7 @@ html.dark .card-spotlight::before {
 	background: radial-gradient(
 		210px circle at var(--spot-x, 50%) var(--spot-y, 50%),
 		rgba(147, 197, 253, 0.55),
-		rgba(226, 190, 110, 0.26) 52%,
+		rgba(255, 209, 220, 0.26) 52%,
 		transparent 78%
 	);
 }
@@ -1792,11 +1792,11 @@ html.dark .markdown-prose img:not([src*='shields.io']) {
 
 /* Gold list markers — a quiet brand touch on every bullet and number. */
 .markdown-prose li::marker {
-	color: rgba(180, 126, 36, 0.9);
+	color: rgba(255, 183, 197, 0.9);
 }
 
 html.dark .markdown-prose li::marker {
-	color: rgba(226, 190, 110, 0.85);
+	color: rgba(255, 209, 220, 0.85);
 }
 
 /* Footnote references read as small gold superscript chips. */
@@ -1991,7 +1991,7 @@ html.dark .back-to-top-progress {
 	stroke-width: 7;
 	stroke-linecap: round;
 	stroke-linejoin: round;
-	stroke-dasharray: 322;
+	stroke-dasharray: 330;
 	stroke-dashoffset: 0;
 	animation: brand-draw 1300ms cubic-bezier(0.45, 0, 0.2, 1) 150ms both;
 }
@@ -2010,7 +2010,7 @@ h1:hover .brand-mark .brand-mark-path {
 
 @keyframes brand-draw {
 	from {
-		stroke-dashoffset: 322;
+		stroke-dashoffset: 330;
 	}
 	to {
 		stroke-dashoffset: 0;
@@ -2019,7 +2019,7 @@ h1:hover .brand-mark .brand-mark-path {
 
 @keyframes brand-draw-again {
 	from {
-		stroke-dashoffset: 322;
+		stroke-dashoffset: 330;
 	}
 	to {
 		stroke-dashoffset: 0;
@@ -2203,12 +2203,12 @@ html[data-nav-dir='back']::view-transition-new(page-title) {
 	pointer-events: none;
 	user-select: none;
 	color: rgba(148, 148, 158, 0.62);
-	--col-gold: rgba(180, 126, 36, 0.8);
+	--col-gold: rgba(255, 183, 197, 0.8);
 }
 
 html.dark .parthenon-grp {
 	color: rgba(113, 113, 122, 0.52);
-	--col-gold: rgba(226, 190, 110, 0.66);
+	--col-gold: rgba(255, 209, 220, 0.66);
 }
 
 @media (min-width: 1280px) {
