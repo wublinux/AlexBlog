@@ -61,3 +61,4 @@ tags: ["tag-a", "tag-b"]
 ## License
 
 MIT — see [LICENSE](./LICENSE)
+# Auto-deploy test
