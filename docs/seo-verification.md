@@ -23,9 +23,9 @@
 
 Use Windows CMD:
 
-- `curl -I https://danarnoux.com/sitemap-index.xml`
-- `curl -I https://danarnoux.com/sitemap-0.xml`
-- `curl -I https://danarnoux.com/sitemap.xml`
+- `curl -I https://letsgogogogogo.pp.ua/sitemap-index.xml`
+- `curl -I https://letsgogogogogo.pp.ua/sitemap-0.xml`
+- `curl -I https://letsgogogogo.pp.ua/sitemap.xml`
 
 Expected:
 - `HTTP 200`
@@ -33,7 +33,7 @@ Expected:
 
 Web Analytics check:
 
-1. Open any production page on `https://danarnoux.com/`.
+1. Open any production page on `https://letsgogogogogo.pp.ua/`.
 2. DevTools -> Network, filter `beacon` or `rum`.
 3. Verify:
    - `beacon.min.js` loads successfully.

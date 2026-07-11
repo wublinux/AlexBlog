@@ -1,7 +1,7 @@
 export type FriendLink = {
 	name: string;
 	url: string;
-	kind: 'github' | 'bilibili' | 'project';
+	kind: 'github' | 'bilibili';
 	github?: string;
 	bilibili?: string;
 	type?: 'github' | 'bilibili';

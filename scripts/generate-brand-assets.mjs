@@ -12,7 +12,7 @@ import sharp from 'sharp';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const publicDir = path.join(root, 'public');
-const SOURCE = path.join(publicDir, 'image', 'DanArnoux.jpg');
+const SOURCE = path.join(publicDir, 'image', 'favicon-512.png');
 
 const circlePng = async (size) => {
 	const mask = Buffer.from(

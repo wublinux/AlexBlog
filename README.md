@@ -1,6 +1,6 @@
 # Alex's Blog
 
-A static Astro + Tailwind personal blog — forked from [DansBlog](https://github.com/Dancncn/DansBlog).
+A static Astro + Tailwind personal blog for technical notes, projects, and long-form writing.
 
 ## Tech Stack
 
@@ -62,4 +62,3 @@ tags: ["tag-a", "tag-b"]
 
 MIT — see [LICENSE](./LICENSE)
 # Auto-deploy test
-

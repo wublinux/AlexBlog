@@ -4,8 +4,10 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build && node scripts/ensure-sitemap-xml.mjs",
+    "check:encoding": "node scripts/check-text-encoding.mjs",
+    "build": "npm run check:encoding && astro build && node scripts/ensure-sitemap-xml.mjs",
     "postbuild": "node scripts/postbuild-sitemap.mjs",
+	"brand:og": "node scripts/generate-og-image.mjs",
     "indexnow": "node scripts/indexnow.mjs",
     "indexnow:sitemap": "node scripts/indexnow.mjs sitemap",
     "preview": "astro preview",

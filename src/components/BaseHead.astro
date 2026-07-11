@@ -74,10 +74,10 @@ const cfWebAnalyticsToken = import.meta.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN;
 	rel="stylesheet"
 	href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Noto+Serif+SC:wght@400;600&display=swap"
 />
-<!-- Brand wordmark face, subset to the exact glyphs of "Dan's Blog" (~few KB). -->
+<!-- Brand wordmark face, subset to the exact glyphs of "Alex's Blog" (~few KB). -->
 <link
 	rel="stylesheet"
-	href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&text=Dan%27s%20Blog%E2%80%99&display=swap"
+	href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&text=Alex%27s%20Blog%E2%80%99&display=swap"
 />
 <!-- Code font is optional to avoid post-paint metric swaps on large code blocks. -->
 <link
@@ -103,7 +103,7 @@ const cfWebAnalyticsToken = import.meta.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN;
 <meta property="og:image" content={ogImageURL} />
 {usesDefaultOgImage && <meta property="og:image:width" content="1200" />}
 {usesDefaultOgImage && <meta property="og:image:height" content="630" />}
-{usesDefaultOgImage && <meta property="og:image:alt" content="Dan's Blog — Research · Engineering · Notes" />}
+{usesDefaultOgImage && <meta property="og:image:alt" content="Alex's Blog — Tech · Notes · Life" />}
 
 <!-- Twitter -->
 <meta property="twitter:card" content="summary_large_image" />
@@ -582,7 +582,7 @@ const cfWebAnalyticsToken = import.meta.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN;
 		{
 			const NAV_ORDER = { '': 0, blog: 1, tags: 2, links: 3, about: 4 };
 			const segmentFor = (url) => {
-				const parts = url.pathname.split('/').filter(Boolean).filter((p) => p !== 'DansBlog');
+				const parts = url.pathname.split('/').filter(Boolean);
 				return parts[0] || '';
 			};
 

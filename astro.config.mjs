@@ -124,10 +124,7 @@ export default defineConfig({
 		mdx(),
 		sitemap({
 			filter: (page) => {
-				if (page.startsWith('https://alexblog.pages.dev/admin/')) {
-					return false;
-				}
-				return !/^https:\/\/danarnoux\.com\/blog\/page\/\d+\/$/.test(page);
+				return !page.includes('/admin/');
 			},
 		}),
 	],
