@@ -22,42 +22,36 @@ const friendPageCount = Math.max(1, Math.ceil(friendLinks.length / FRIENDS_PAGE_
 const friendPages = Array.from({ length: friendPageCount }, (_, index) =>
 	friendLinks.slice(index * FRIENDS_PAGE_SIZE, (index + 1) * FRIENDS_PAGE_SIZE)
 );
-type FriendCard = (typeof friendLinks)[number];
-type FriendPageItem = FriendCard | { __placeholder: true; id: string };
-const friendPagesFilled: FriendPageItem[][] = friendPages.map((items, pageIndex) => {
-	const missing = Math.max(0, FRIENDS_PAGE_SIZE - items.length);
-	const placeholders: FriendPageItem[] = Array.from({ length: missing }, (_, itemIndex) => ({
-		__placeholder: true,
-		id: `friend-placeholder-${pageIndex}-${itemIndex}`,
-	}));
-	return [...items, ...placeholders];
-});
+const friendPagesFilled = friendPages;
 ---
 
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`Friends & Projects | ${SITE_TITLE} - Curated Developer Resources`} description="A curated collection of friends, fellow developers, and interesting projects I recommend. Discover inspiring blogs and useful tools." />
+		<BaseHead title={`Projects & Friends | ${SITE_TITLE}`} description="Live GitHub projects, selected tools, and developers whose work I follow." />
 	</head>
 	<body>
 		<MeteorShower density={0.5} heightVh={42} />
 		<Header />
 		<MobileDrawer />
-		<main class="mx-auto max-w-6xl px-4 py-12" transition:name="page-main" transition:animate="fade">
+		<main class="mx-auto flex max-w-6xl flex-col px-4 py-12" transition:name="page-main" transition:animate="fade">
 			<PageHeading
-				eyebrow="Community"
-				title="Friends"
-				accent="& Projects"
-				subtitle="People whose work I follow, and a few tools worth keeping around."
+				eyebrow="GitHub"
+				title="Projects"
+				accent="& Friends"
+				subtitle="Live project activity from GitHub, followed by people whose work I value."
 			/>
 
-			<section class="mt-8">
+			<section class="order-3 mt-14">
 				<div class="flex items-center justify-between gap-4">
 					<h2 class="flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
 						<span class="h-px w-6 bg-gradient-to-r from-[rgb(180,126,36)] to-transparent dark:from-[rgb(226,190,110)]"></span>
 						Friends
 					</h2>
-					<div class="friends-pager inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/80 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/70">
+					<div class:list={[
+						'friends-pager inline-flex items-center gap-2 rounded-2xl border border-zinc-200/80 bg-white/80 p-1.5 shadow-[0_8px_24px_rgba(15,23,42,0.06)] backdrop-blur-md dark:border-zinc-800/80 dark:bg-zinc-950/70',
+						friendPageCount <= 1 && 'hidden',
+					]}>
 						<button
 							type="button"
 							class="friends-pager-button inline-flex h-10 min-w-[72px] items-center justify-center rounded-xl px-3.5 text-sm font-medium text-zinc-700 transition-all duration-220 ease-[cubic-bezier(0.22,1,0.36,1)] hover:-translate-y-0.5 hover:bg-zinc-100/85 hover:text-zinc-900 hover:shadow-sm dark:text-zinc-200 dark:hover:bg-zinc-800/85 is-hidden"
@@ -89,15 +83,6 @@ const friendPagesFilled: FriendPageItem[][] = friendPages.map((items, pageIndex)
 								<div data-friends-store-page={pageIndex}>
 									{
 										pageItems.map((item) => {
-											if ('__placeholder' in item) {
-												return (
-													<article
-														class="min-h-[210px] rounded-2xl border border-zinc-200 bg-white/90 p-5 opacity-0 pointer-events-none shadow-sm dark:border-zinc-800 dark:bg-zinc-950/80"
-														aria-hidden="true"
-													/>
-												);
-											}
-
 											const tags = item.tags ?? [];
 											const shown = tags.slice(0, MAX_TAGS);
 											const more = Math.max(tags.length - shown.length, 0);
@@ -189,7 +174,7 @@ const friendPagesFilled: FriendPageItem[][] = friendPages.map((items, pageIndex)
 				</div>
 			</section>
 
-			<section class="section-enter section-enter-delay-1 mt-14">
+			<section id="projects" class="order-2 mt-8 scroll-mt-24 section-enter section-enter-delay-1">
 				<div class="mb-4">
 					<h2 class="flex items-center gap-2.5 text-sm font-semibold uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-400">
 						<span class="h-px w-6 bg-gradient-to-r from-[rgb(180,126,36)] to-transparent dark:from-[rgb(226,190,110)]"></span>
