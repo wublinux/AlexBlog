@@ -9,6 +9,7 @@ import MobileDrawer from '../components/MobileDrawer.astro';
 import FloatingClouds from '../components/FloatingClouds.astro';
 import PostCard from '../components/PostCard.astro';
 import TerminalQuote from '../components/TerminalQuote.astro';
+import InteractiveTerminal from '../components/InteractiveTerminal.astro';
 import { GITHUB_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
 
 const BASE = import.meta.env.BASE_URL;
@@ -33,7 +34,7 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 		<main class="page-shell page-fade-in py-10 md:py-14" transition:name="page-main" transition:animate="fade">
 			<div class="space-y-6">
 				<section class="hero-enter overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
-					<div class="relative h-[44vh] min-h-[300px] w-full">
+					<div class="relative h-[44vh] min-h-[300px] w-full overflow-hidden">
 						<img
 							src={HOME_WALLPAPER}
 							alt="日系春日房间、樱花与二次元人物组成的博客主视觉"
@@ -41,7 +42,8 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 							height="900"
 							loading="eager"
 							fetchpriority="high"
-							class="hero-kenburns h-full w-full object-cover object-[62%_center] md:object-center"
+							data-parallax
+							class="hero-kenburns h-full w-full object-cover object-[62%_center] md:object-center will-change-transform"
 						/>
 						<div class="absolute inset-0 bg-zinc-900/10 dark:bg-zinc-950/25"></div>
 						<div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/35 to-transparent"></div>
@@ -82,11 +84,25 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 							</span>
 						</div>
 						<div class="mt-3.5 flex items-center gap-2">
+							<span
+								data-easter-egg-trigger
+								class="inline-flex items-center rounded-full border border-zinc-200/85 bg-white/78 px-3 py-1.5 text-[11px] font-medium tracking-[0.01em] text-zinc-400 shadow-[0_8px_20px_rgba(15,23,42,0.04)] backdrop-blur-sm dark:border-zinc-700/80 dark:bg-zinc-900/72 dark:text-zinc-500 cursor-default select-none"
+								title="7.7"
+							>
+								7.7
+							</span>
 						</div>
 					</div>
 
 					<div class="hero-enter hero-enter-delay-2 w-full max-w-sm justify-self-end md:self-start">
 						<TerminalQuote />
+					</div>
+				</section>
+
+				<!-- Interactive Terminal Section -->
+				<section class="hero-enter hero-enter-delay-2">
+					<div class="max-w-md mx-auto">
+						<InteractiveTerminal />
 					</div>
 				</section>
 
@@ -135,6 +151,137 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 			</section>
 		</main>
 		<Footer />
+
+		<!-- Easter Egg: click "7.7" five times to reveal hidden content -->
+		<div data-easter-egg-overlay class="fixed inset-0 z-[9999] hidden items-center justify-center bg-black/60 backdrop-blur-sm">
+			<div class="relative max-w-lg mx-4 p-8 rounded-2xl bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 shadow-2xl text-center">
+				<button data-easter-egg-close class="absolute top-3 right-3 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-200 transition-colors">
+					<svg viewBox="0 0 24 24" class="h-5 w-5" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12" stroke-linecap="round" stroke-linejoin="round"/></svg>
+				</button>
+				<div data-easter-egg-content class="font-serif text-zinc-700 dark:text-zinc-200 leading-relaxed"></div>
+			</div>
+		</div>
+
+		<script is:inline>
+			(() => {
+				/*
+				 * Easter egg: click the "7.7" badge 5 times to reveal hidden content.
+				 */
+				const initEasterEgg = () => {
+					const trigger = document.querySelector('[data-easter-egg-trigger]');
+					const overlay = document.querySelector('[data-easter-egg-overlay]');
+					const content = document.querySelector('[data-easter-egg-content]');
+					const closeBtn = document.querySelector('[data-easter-egg-close]');
+					if (!trigger || !overlay || !content || !closeBtn) return;
+					if (trigger.dataset.bound === 'true') return;
+					trigger.dataset.bound = 'true';
+
+					let clickCount = 0;
+					let clickTimer = null;
+
+					trigger.addEventListener('click', () => {
+						clickCount++;
+						if (clickTimer) clearTimeout(clickTimer);
+						clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+
+						if (clickCount >= 5) {
+							clickCount = 0;
+							showEasterEgg();
+						}
+					});
+
+					const showEasterEgg = async () => {
+						try {
+							const base = document.querySelector('base')?.getAttribute('href') || '/';
+							const res = await fetch(`${base}easter-egg/content.html`);
+							if (res.ok) {
+								content.innerHTML = await res.text();
+							} else {
+								content.innerHTML = '<p class="text-lg">You found the secret! ✨</p><p class="mt-2 text-sm text-zinc-500">Place your easter egg content in <code>public/easter-egg/content.html</code></p>';
+							}
+						} catch {
+							content.innerHTML = '<p class="text-lg">You found the secret! ✨</p>';
+						}
+						overlay.classList.remove('hidden');
+						overlay.classList.add('flex');
+					};
+
+					closeBtn.addEventListener('click', () => {
+						overlay.classList.add('hidden');
+						overlay.classList.remove('flex');
+					});
+
+					overlay.addEventListener('click', (e) => {
+						if (e.target === overlay) {
+							overlay.classList.add('hidden');
+							overlay.classList.remove('flex');
+						}
+					});
+				};
+
+				window.__easterEggInit = initEasterEgg;
+				if (!window.__easterEggPageLoadBound) {
+					window.__easterEggPageLoadBound = true;
+					document.addEventListener('astro:page-load', () => {
+						if (typeof window.__easterEggInit === 'function') window.__easterEggInit();
+					});
+				}
+				initEasterEgg();
+			})();
+		</script>
+
+		<script is:inline>
+			(() => {
+				/*
+				 * Scroll parallax for hero image.
+				 * Translates the image slightly as user scrolls for depth effect.
+				 */
+				const initParallax = () => {
+					const img = document.querySelector('[data-parallax]');
+					if (!img) return;
+
+					const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+					if (reducedMotion) return;
+
+					let ticking = false;
+
+					const onScroll = () => {
+						if (ticking) return;
+						ticking = true;
+						requestAnimationFrame(() => {
+							const rect = img.getBoundingClientRect();
+							const viewH = window.innerHeight;
+							// Only apply when hero is in viewport
+							if (rect.bottom > 0 && rect.top < viewH) {
+								const progress = (viewH - rect.top) / (viewH + rect.height);
+								const offset = (progress - 0.5) * 40; // -20px to +20px
+								img.style.transform = `translateY(${offset}px) scale(1.05)`;
+							}
+							ticking = false;
+						});
+					};
+
+					window.addEventListener('scroll', onScroll, { passive: true });
+					onScroll();
+
+					const cleanup = () => {
+						window.removeEventListener('scroll', onScroll);
+						img.style.transform = '';
+					};
+
+					document.addEventListener('astro:before-swap', cleanup);
+				};
+
+				window.__parallaxInit = initParallax;
+				if (!window.__parallaxPageLoadBound) {
+					window.__parallaxPageLoadBound = true;
+					document.addEventListener('astro:page-load', () => {
+						if (typeof window.__parallaxInit === 'function') window.__parallaxInit();
+					});
+				}
+				initParallax();
+			})();
+		</script>
 
 		<script is:inline>
 			(() => {

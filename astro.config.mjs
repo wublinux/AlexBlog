@@ -6,6 +6,8 @@
  * - Keeps asset/link behavior deterministic by deriving `site` + `base` from build environment.
  */
 import mdx from '@astrojs/mdx';
+import { unified } from '@astrojs/markdown-remark';
+import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { defineConfig } from 'astro/config';
 
@@ -121,6 +123,7 @@ export default defineConfig({
 	trailingSlash: 'always',
 	output: 'static',
 	integrations: [
+		react(),
 		mdx(),
 		sitemap({
 			filter: (page) => {
@@ -129,9 +132,11 @@ export default defineConfig({
 		}),
 	],
 	markdown: {
-		// Keep markdown image URLs deployment-agnostic.
-		remarkPlugins: [remarkGitHubAlertFallback],
-		rehypePlugins: [rehypePrefixPublicImageBase(runtimeBase)],
+		processor: unified({
+			// Keep markdown image URLs deployment-agnostic.
+			remarkPlugins: [remarkGitHubAlertFallback],
+			rehypePlugins: [rehypePrefixPublicImageBase(runtimeBase)],
+		}),
 		syntaxHighlight: 'shiki',
 		shikiConfig: {
 			themes: {

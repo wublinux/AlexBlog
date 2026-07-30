@@ -1,0 +1,18 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="页面不存在" active="none">
+	<main class="admin-main admin-shell">
+		<section class="admin-card admin-empty">
+			<p class="admin-eyebrow">404</p>
+			<h1 class="admin-title">这个后台页面不存在</h1>
+			<p class="admin-subtitle" style="margin-inline: auto;">
+				你可以返回文章列表，继续管理博客内容。
+			</p>
+			<a class="admin-button admin-button--primary" href="/admin/dashboard/" style="margin-top: 1rem;">
+				返回文章管理
+			</a>
+		</section>
+	</main>
+</AdminLayout>

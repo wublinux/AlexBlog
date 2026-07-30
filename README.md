@@ -4,7 +4,7 @@ A static Astro + Tailwind personal blog for technical notes, projects, and long-
 
 ## Tech Stack
 
-- **Framework**: Astro 5 (static output)
+- **Framework**: Astro 7 (static output)
 - **Styling**: Tailwind CSS 4 + Typography plugin
 - **Content**: Astro Content Collections (Markdown + MDX)
 - **Code Highlighting**: Shiki (github-light / github-dark)
@@ -57,6 +57,10 @@ tags: ["tag-a", "tag-b"]
 3. Output directory: `dist/`
 4. Environment variable: `CF_PAGES=1`
 5. Bind your custom domain
+
+The private GitHub-integrated CMS is served from `/admin/`. Its Cloudflare
+Worker setup and deployment commands are documented in
+[`workers/cms-api/README.md`](./workers/cms-api/README.md).
 
 ## License
 

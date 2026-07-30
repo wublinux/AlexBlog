@@ -1,0 +1,112 @@
+---
+/*
+ * Giscus comment system powered by GitHub Discussions.
+ * Configure at: https://giscus.app/
+ */
+interface Props {
+	/** GitHub repo in "owner/repo" format */
+	repo: string;
+	/** Giscus repo ID (from giscus.app) */
+	repoId: string;
+	/** Discussion category name */
+	category?: string;
+	/** Giscus category ID (from giscus.app) */
+	categoryId?: string;
+	/** Mapping method: pathname, url, title, og:title */
+	mapping?: string;
+	/** Reactions enabled */
+	reactionsEnabled?: boolean;
+	/** Emit metadata */
+	emitMetadata?: boolean;
+	/** Input position: top or bottom */
+	inputPosition?: 'top' | 'bottom';
+	/** Theme: light, dark, preferred_color_scheme, transparent_dark, etc. */
+	theme?: string;
+	/** Language */
+	lang?: string;
+	/** Loading: lazy or eager */
+	loading?: 'lazy' | 'eager';
+}
+
+const {
+	repo,
+	repoId,
+	category = 'Announcements',
+	categoryId,
+	mapping = 'pathname',
+	reactionsEnabled = true,
+	emitMetadata = false,
+	inputPosition = 'top',
+	theme = 'preferred_color_scheme',
+	lang = 'en',
+	loading = 'lazy',
+} = Astro.props;
+---
+
+<section class="giscus-comments mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-700">
+	<h2 class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6">Comments</h2>
+	<div class="giscus" data-giscus-configured>
+		<script
+			is:inline
+			src="https://giscus.app/client.js"
+			data-repo={repo}
+			data-repo-id={repoId}
+			data-category={category}
+			data-category-id={categoryId}
+			data-mapping={mapping}
+			data-strict="0"
+			data-reactions-enabled={reactionsEnabled ? '1' : '0'}
+			data-emit-metadata={emitMetadata ? '1' : '0'}
+			data-input-position={inputPosition}
+			data-theme={theme}
+			data-lang={lang}
+			data-loading={loading}
+			crossorigin="anonymous"
+			async
+		></script>
+	</div>
+</section>
+
+<script is:inline>
+	/*
+	 * Sync Giscus theme with site dark mode.
+	 */
+	(() => {
+		const updateGiscusTheme = () => {
+			const isDark = document.documentElement.classList.contains('dark');
+			const theme = isDark ? 'transparent_dark' : 'light';
+			const iframe = document.querySelector('iframe.giscus-frame');
+			if (iframe) {
+				iframe.contentWindow?.postMessage(
+					{ giscus: { setConfig: { theme } } },
+					'https://giscus.app'
+				);
+			}
+		};
+
+		// Watch for dark mode changes
+		const observer = new MutationObserver((mutations) => {
+			for (const mutation of mutations) {
+				if (mutation.attributeName === 'class') {
+					updateGiscusTheme();
+				}
+			}
+		});
+
+		const init = () => {
+			observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+			// Initial sync after iframe loads
+			setTimeout(updateGiscusTheme, 2000);
+		};
+
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', init);
+		} else {
+			init();
+		}
+
+		document.addEventListener('astro:page-load', () => {
+			setTimeout(updateGiscusTheme, 2000);
+		});
+	})();
+</script>

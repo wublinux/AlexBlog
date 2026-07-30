@@ -1,0 +1,205 @@
+---
+/*
+ * Interactive terminal card for hero sections.
+ * Visitors can type commands to explore hidden content.
+ * Falls back to quote mode when not interacted with.
+ */
+import quotesData from '../data/quotes.json';
+
+type Quote = {
+	text: string;
+	author?: string;
+	lang?: string;
+	tag?: string;
+	easterEgg?: boolean;
+};
+
+interface Props {
+	fixedHeight?: boolean;
+}
+
+const { fixedHeight = true } = Astro.props as Props;
+
+const rawQuotes = Array.isArray(quotesData)
+	? quotesData
+	: (quotesData as { quotes?: Quote[] }).quotes ?? [];
+const quotes = rawQuotes.filter((q) => typeof q.text === 'string' && q.text.trim().length > 0);
+const encodedQuotes = encodeURIComponent(JSON.stringify(quotes));
+---
+
+<aside
+	data-interactive-terminal
+	data-quotes={encodedQuotes}
+	class:list={[
+		'w-full overflow-hidden rounded-[1.6rem] border border-zinc-200/75 bg-white/72 shadow-[0_18px_48px_rgba(15,23,42,0.06)] backdrop-blur-xl transition-colors duration-200 dark:border-zinc-800/80 dark:bg-zinc-950/54 dark:shadow-[0_20px_48px_rgba(0,0,0,0.22)] flex flex-col',
+		fixedHeight ? 'h-[220px]' : 'min-h-[220px] h-auto',
+	]}
+>
+	<div class="flex items-center justify-between border-b border-zinc-200/65 bg-[linear-gradient(180deg,rgba(255,255,255,0.68),rgba(255,250,240,0.42))] px-4 py-2.5 backdrop-blur-md dark:border-zinc-800/80 dark:bg-[linear-gradient(180deg,rgba(39,39,42,0.42),rgba(24,24,27,0.16))]">
+		<div class="flex items-center gap-1.5">
+			<span class="h-2.5 w-2.5 rounded-full bg-[linear-gradient(180deg,rgba(244,63,94,0.95),rgba(251,113,133,0.76))] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset]"></span>
+			<span class="h-2.5 w-2.5 rounded-full bg-[linear-gradient(180deg,rgba(251,191,36,0.95),rgba(252,211,77,0.76))] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset]"></span>
+			<span class="h-2.5 w-2.5 rounded-full bg-[linear-gradient(180deg,rgba(52,211,153,0.95),rgba(110,231,183,0.76))] shadow-[0_0_0_1px_rgba(255,255,255,0.35)_inset]"></span>
+		</div>
+		<p class="m-0 font-mono text-[11px] tracking-[0.08em] text-zinc-400 dark:text-zinc-500">~/alex/terminal</p>
+	</div>
+
+	<div class="flex flex-1 flex-col px-4 pb-4 pt-3.5 font-mono text-[13px] leading-7 text-zinc-600 dark:text-zinc-300 overflow-hidden" data-terminal-output>
+		<div class="flex-1 overflow-y-auto min-h-0">
+			<p class="m-0">
+				<span class="bg-[linear-gradient(135deg,rgba(180,126,36,1),rgba(226,190,110,0.96),rgba(150,102,22,1))] bg-clip-text text-transparent dark:bg-[linear-gradient(135deg,rgba(250,214,140,0.96),rgba(205,160,72,0.92),rgba(255,232,179,0.96))]">alex@blog</span>
+				<span class="ml-[1px] text-zinc-400 dark:text-zinc-500">:~$</span>
+				<span class="ml-1 text-zinc-700 dark:text-zinc-200">welcome</span>
+			</p>
+			<p class="m-0 text-zinc-500 dark:text-zinc-400">Type <span class="text-emerald-600 dark:text-emerald-400">help</span> to see available commands.</p>
+
+			<div class="mt-3">
+				<p class="m-0 whitespace-normal break-words text-[13px] leading-7 text-zinc-700 dark:text-zinc-200" data-terminal-line>
+					<span data-terminal-text></span><span data-cursor class="ml-0.5 inline-block h-[0.95em] w-[0.36em] animate-pulse rounded-[1px] bg-zinc-700/85 align-[-0.08em] dark:bg-zinc-200/85" aria-hidden="true"></span>
+				</p>
+			</div>
+		</div>
+
+		<div class="mt-2 flex items-center border-t border-zinc-200/40 pt-2 dark:border-zinc-800/40 shrink-0">
+			<span class="bg-[linear-gradient(135deg,rgba(180,126,36,1),rgba(226,190,110,0.96),rgba(150,102,22,1))] bg-clip-text text-transparent dark:bg-[linear-gradient(135deg,rgba(250,214,140,0.96),rgba(205,160,72,0.92),rgba(255,232,179,0.96))]">alex@blog</span>
+			<span class="ml-[1px] text-zinc-400 dark:text-zinc-500">:~$</span>
+			<input
+				type="text"
+				data-terminal-input
+				class="ml-1 flex-1 bg-transparent text-zinc-700 outline-none dark:text-zinc-200 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 font-mono text-[13px] min-w-0"
+				placeholder="type a command..."
+				autocomplete="off"
+				spellcheck="false"
+			/>
+		</div>
+	</div>
+</aside>
+
+<script is:inline>
+	(() => {
+		const COMMANDS = {
+			help: () => 'Available commands: help, quote, about, links, clear, neofetch',
+			quote: null, // random quote
+			about: () => 'A personal blog about tech, notes, and life.\nBuilt with Astro + Tailwind CSS.',
+			links: () => 'GitHub: github.com/wublinux\nBlog: letsgogogogogo.pp.ua',
+			clear: '__CLEAR__',
+			neofetch: () => {
+				return `     .--.        alex@blog
+    |o_o |       -----------
+    |:_/ |       OS: Astro 5 + Tailwind CSS
+   //   \\ \\      Shell: interactive-terminal
+  (|     | )     Theme: auto (dark/light)
+ /'\\_   _/\`\\    Uptime: since 2026
+ \\___)=(___/    Blog: letsgogogogogo.pp.ua`;
+			},
+		};
+
+		const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+		const initTerminal = (root) => {
+			const input = root.querySelector('[data-terminal-input]');
+			const output = root.querySelector('[data-terminal-output]');
+			const textEl = root.querySelector('[data-terminal-text]');
+			const lineEl = root.querySelector('[data-terminal-line]');
+			if (!input || !output || !textEl || !lineEl) return;
+			if (root.dataset.terminalBound === 'true') return;
+			root.dataset.terminalBound = 'true';
+
+			const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			const rawQuotes = (() => {
+				try {
+					return JSON.parse(decodeURIComponent(root.getAttribute('data-quotes') || '[]'));
+				} catch { return []; }
+			})();
+
+			const getRandomQuote = () => {
+				if (!rawQuotes.length) return 'No quotes loaded.';
+				const q = rawQuotes[Math.floor(Math.random() * rawQuotes.length)];
+				return q.text + (q.author ? ` — ${q.author}` : '');
+			};
+
+			const typeText = async (value) => {
+				textEl.textContent = '';
+				if (reducedMotion) {
+					textEl.textContent = value;
+					return;
+				}
+				for (let i = 1; i <= value.length; i++) {
+					textEl.textContent = value.slice(0, i);
+					await sleep(15 + Math.random() * 15);
+				}
+			};
+
+			const addLine = (html, cls = '') => {
+				const p = document.createElement('p');
+				p.className = `m-0 whitespace-pre-wrap break-words ${cls}`;
+				p.innerHTML = html;
+				lineEl.parentNode.insertBefore(p, lineEl);
+			};
+
+			const handleCommand = async (cmd) => {
+				const trimmed = cmd.trim().toLowerCase();
+				if (!trimmed) return;
+
+				// Echo the command
+				addLine(`<span class="text-emerald-600 dark:text-emerald-400">$</span> ${cmd}`, 'text-zinc-600 dark:text-zinc-400');
+
+				if (trimmed === 'clear') {
+					const lines = output.querySelectorAll('p:not([data-terminal-line])');
+					lines.forEach(l => l.remove());
+					textEl.textContent = '';
+					return;
+				}
+
+				if (trimmed === 'quote') {
+					await typeText(getRandomQuote());
+					return;
+				}
+
+				const handler = COMMANDS[trimmed];
+				if (handler) {
+					const result = typeof handler === 'function' ? handler() : handler;
+					if (result !== '__CLEAR__') {
+						await typeText(result);
+					}
+				} else {
+					await typeText(`command not found: ${trimmed}\nType "help" for available commands.`);
+				}
+
+				// Scroll to bottom
+				output.scrollTop = output.scrollHeight;
+			};
+
+			input.addEventListener('keydown', (e) => {
+				if (e.key === 'Enter') {
+					e.preventDefault();
+					const val = input.value;
+					input.value = '';
+					handleCommand(val);
+				}
+			});
+
+			// Focus input when clicking anywhere in terminal
+			root.addEventListener('click', () => input.focus());
+
+			// Auto-type quote after a delay
+			setTimeout(async () => {
+				await typeText(getRandomQuote());
+			}, 800);
+		};
+
+		const initAll = () => {
+			document.querySelectorAll('[data-interactive-terminal]').forEach(initTerminal);
+		};
+
+		window.__interactiveTerminalInit = initAll;
+		if (!window.__interactiveTerminalBound) {
+			window.__interactiveTerminalBound = true;
+			document.addEventListener('astro:page-load', () => {
+				requestAnimationFrame(() => window.__interactiveTerminalInit?.());
+			});
+		}
+		initAll();
+	})();
+</script>

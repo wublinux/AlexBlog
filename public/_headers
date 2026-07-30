@@ -9,3 +9,11 @@
 
 /rss.xml
   Content-Type: application/xml; charset=utf-8
+
+/admin/*
+  Cache-Control: no-store
+  Content-Security-Policy: default-src 'self'; img-src 'self' data: https://avatars.githubusercontent.com; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self' https://github.com
+  Referrer-Policy: same-origin
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow, noarchive

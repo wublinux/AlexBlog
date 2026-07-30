@@ -1,0 +1,10 @@
+---
+import EditorApp from '../../../components/admin/EditorApp';
+import AdminLayout from '../../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="文章编辑器" active="editor">
+	<main class="admin-main admin-shell">
+		<EditorApp client:only="react" />
+	</main>
+</AdminLayout>

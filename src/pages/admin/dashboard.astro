@@ -1,0 +1,23 @@
+---
+import ArticleList from '../../components/admin/ArticleList';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="文章管理" active="posts">
+	<main class="admin-main admin-shell">
+		<header class="admin-page-header">
+			<div>
+				<p class="admin-eyebrow">Content workspace</p>
+				<h1 class="admin-title">文章管理</h1>
+				<p class="admin-subtitle">
+					文章直接存放在 GitHub 仓库中；每次保存都会保留提交历史并触发博客部署。
+				</p>
+			</div>
+			<a class="admin-button admin-button--primary" href="/admin/edit/?new=1">
+				<span aria-hidden="true">＋</span>
+				新建文章
+			</a>
+		</header>
+		<ArticleList client:load />
+	</main>
+</AdminLayout>

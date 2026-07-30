@@ -9,6 +9,8 @@ import Header from '../components/Header.astro';
 import MobileDrawer from '../components/MobileDrawer.astro';
 import TocSidebar from '../components/TocSidebar.astro';
 import TocDrawer from '../components/TocDrawer.astro';
+import Giscus from '../components/Giscus.astro';
+import ReadingPet from '../components/ReadingPet.astro';
 import { getPostAnalyticsKey } from '../utils/postAnalytics';
 import { getTagSlug } from '../utils/tags';
 
@@ -26,6 +28,9 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	};
 	relatedPosts?: CollectionEntry<'blog'>[];
 	relatedPostsLang?: 'cn' | 'en';
+	giscusRepo?: string;
+	giscusRepoId?: string;
+	giscusCategoryId?: string;
 };
 
 const {
@@ -44,6 +49,9 @@ const {
 	languageSwitch,
 	relatedPosts = [],
 	relatedPostsLang = 'en',
+	giscusRepo = '',
+	giscusRepoId = '',
+	giscusCategoryId = '',
 } = Astro.props;
 
 const BASE = import.meta.env.BASE_URL;
@@ -276,6 +284,18 @@ const charsLabel = chars.toLocaleString('en-US');
 							)
 						}
 
+						{/* Comments - only show when Giscus is configured */}
+						{metaMode === 'article' && slug && giscusRepoId && (
+							<Giscus
+								repo={giscusRepo}
+								repoId={giscusRepoId}
+								category="Announcements"
+								categoryId={giscusCategoryId}
+								mapping="pathname"
+								theme="preferred_color_scheme"
+								lang="zh-CN"
+							/>
+						)}
 						
 					</main>
 
@@ -285,6 +305,8 @@ const charsLabel = chars.toLocaleString('en-US');
 		</main>
 
 		<Footer />
+
+		<ReadingPet />
 
 		<button type="button" class="back-to-top" data-back-to-top aria-label="Back to top">
 			<svg class="back-to-top-ring" viewBox="0 0 48 48" aria-hidden="true">
@@ -856,7 +878,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				if (window.__activePostViewsSlug === slug) return;
 				window.__activePostViewsSlug = slug;
 
-				const apiBase = window.__API_BASE || 'https://api.example.com';
+				const apiBase = window.__API_BASE || '';
 				const sessionKey = `blog_viewed:${slug}`;
 				const hasViewedInSession = (() => {
 					try {
@@ -867,6 +889,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				})();
 
 				try {
+					if (!apiBase) throw new Error('no_api');
 					const response = hasViewedInSession
 						? await fetch(`${apiBase}/api/views?post=${encodeURIComponent(slug)}`)
 						: await fetch(`${apiBase}/api/views`, {
@@ -903,7 +926,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				const roots = Array.from(document.querySelectorAll('[data-related-post-views-root]'));
 				if (!roots.length) return;
 
-				const apiBase = window.__API_BASE || 'https://api.example.com';
+				const apiBase = window.__API_BASE || '';
 				const uniqueKeys = [...new Set(
 					roots
 						.map((root) => root.getAttribute('data-related-post-views-root') || '')

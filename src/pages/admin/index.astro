@@ -1,0 +1,24 @@
+---
+import LoginButton from '../../components/admin/LoginButton';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+
+const oauthError = Astro.url.searchParams.get('error');
+---
+
+<AdminLayout title="登录" hideNav>
+	<main class="admin-login">
+		<section class="admin-card admin-login__card">
+			<div class="admin-login__mark">AB</div>
+			<p class="admin-eyebrow">Private workspace</p>
+			<h1 class="admin-login__title">AlexBlog CMS</h1>
+			<p class="admin-login__copy">
+				通过 GitHub 安全登录，直接创建文章、管理图片并查看自动部署状态。
+			</p>
+			{oauthError && <div class="admin-alert admin-alert--error">登录未完成，请重试。</div>}
+			<LoginButton client:load />
+			<p class="admin-help" style="margin-top: 1rem;">
+				仅拥有仓库写入权限的协作者可以进入。
+			</p>
+		</section>
+	</main>
+</AdminLayout>

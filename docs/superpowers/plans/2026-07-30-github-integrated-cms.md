@@ -1,6 +1,9 @@
 # GitHub 集成 CMS 实现计划
 
-> **面向 AI 代理的工作者：** 必需子技能：使用 superpowers:subagent-driven-development（推荐）或 superpowers:executing-plans 逐任务实现此计划。步骤使用复选框（`- [ ]`）语法来跟踪进度。
+> **历史文档，不是当前执行指令。** 本计划已由现有实现和
+> [`docs/PROJECT-PLAN.md`](../../PROJECT-PLAN.md) 取代，其中的文件结构、版本号、
+> Secrets 和示例代码可能已经过时。后续代理不得逐项照抄本文件，也不得据此新增
+> `GITHUB_TOKEN`、宽松 CORS 或手写 Wrangler 绑定类型。
 
 **目标：** 构建一个基于 GitHub API 的自定义 CMS 界面，让用户通过网页管理 Astro 博客文章，提交后自动部署到 Cloudflare Pages。
 

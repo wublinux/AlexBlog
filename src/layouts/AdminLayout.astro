@@ -1,0 +1,40 @@
+---
+import AdminNav from '../components/admin/AdminNav';
+import '../styles/global.css';
+import '../styles/admin.css';
+
+interface Props {
+	title: string;
+	active?: 'posts' | 'media' | 'editor' | 'none';
+	hideNav?: boolean;
+}
+
+const { title, active = 'none', hideNav = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<meta name="robots" content="noindex, nofollow, noarchive" />
+		<meta name="referrer" content="same-origin" />
+		<title>{title} | AlexBlog CMS</title>
+	</head>
+	<body class="admin-body">
+		{
+			!hideNav && (
+				<header class="admin-topbar">
+					<div class="admin-shell admin-topbar__inner">
+						<a class="admin-brand" href="/admin/dashboard/">
+							<span class="admin-brand__mark">AB</span>
+							<span>AlexBlog CMS</span>
+						</a>
+						<AdminNav active={active} client:load />
+					</div>
+				</header>
+			)
+		}
+		<slot />
+	</body>
+</html>

@@ -180,7 +180,7 @@ const friendPagesFilled = friendPages;
 						<span class="h-px w-6 bg-gradient-to-r from-[rgb(180,126,36)] to-transparent dark:from-[rgb(226,190,110)]"></span>
 						Projects
 					</h2>
-					<p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Selected tools and product experiments.</p>
+					<p class="mt-2 text-sm text-zinc-500 dark:text-zinc-400">Live from GitHub — all public repositories.</p>
 				</div>
 				<div class="mt-4 grid grid-cols-1 gap-6 sm:grid-cols-2" data-github-projects>
 					{
@@ -290,6 +290,7 @@ const friendPagesFilled = friendPages;
 						.map((repo) => [repo.name!.toLowerCase(), repo])
 				);
 
+				// Update existing static cards
 				document.querySelectorAll<HTMLElement>('[data-project-repo]').forEach((card) => {
 					const repoName = card.dataset.projectRepo?.toLowerCase();
 					const repo = repoName ? byName.get(repoName) : undefined;
@@ -331,7 +332,63 @@ const friendPagesFilled = friendPages;
 					}
 					const status = card.querySelector<HTMLElement>('[data-project-sync-status]');
 					if (status) status.textContent = source === 'live' ? 'Live from GitHub' : 'GitHub cached';
+
+					// Mark as matched so we don't add it again
+					byName.delete(repoName!);
 				});
+
+				// Add dynamic cards for new repos not in the static list
+				const root = document.querySelector<HTMLElement>('[data-github-projects]');
+				if (root) {
+					const newRepos = Array.from(byName.values())
+						.sort((a, b) => new Date(b.updated_at || 0).getTime() - new Date(a.updated_at || 0).getTime());
+
+					newRepos.forEach((repo, idx) => {
+						const repoUrl = safeExternalUrl(repo.html_url) || `https://github.com/wublinux/${repo.name}`;
+						const description = typeof repo.description === 'string' && repo.description.trim().length >= 4
+							? repo.description.trim()
+							: 'No description provided.';
+						const language = repo.language || '';
+						const updatedDate = repo.updated_at ? new Date(repo.updated_at) : null;
+						const updatedStr = updatedDate && !Number.isNaN(updatedDate.valueOf())
+							? `Updated ${updatedDate.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}`
+							: '';
+
+						const card = document.createElement('article');
+						card.className = 'card-spotlight group relative flex min-h-[260px] flex-col rounded-2xl border border-zinc-200 bg-white/95 p-6 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-950/85 dark:hover:border-zinc-600';
+						card.setAttribute('data-reveal', '');
+						card.style.setProperty('--reveal-delay', `${(idx % 2) * 70}ms`);
+
+						card.innerHTML = `
+							<div class="flex items-start justify-between gap-3">
+								<div class="flex items-center gap-3">
+									<span class="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-zinc-200 bg-zinc-100 text-zinc-700 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200">
+										<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current" aria-hidden="true"><path d="M12 .7a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2.24c-3.23.7-3.91-1.37-3.91-1.37-.53-1.34-1.29-1.7-1.29-1.7-1.05-.72.08-.71.08-.71 1.17.08 1.78 1.2 1.78 1.2 1.04 1.78 2.72 1.26 3.38.97.1-.75.4-1.27.74-1.56-2.58-.3-5.29-1.29-5.29-5.68 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.47.11-3.05 0 0 .97-.31 3.16 1.18a10.9 10.9 0 0 1 5.76 0c2.2-1.49 3.16-1.18 3.16-1.18.63 1.58.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.4-2.72 5.38-5.3 5.67.42.36.79 1.06.79 2.14v3.17c0 .31.21.67.79.56A11.5 11.5 0 0 0 12 .7Z" /></svg>
+									</span>
+									<h3 class="text-lg font-semibold text-zinc-900 dark:text-zinc-100">${repo.name}</h3>
+								</div>
+								<span class="rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/50 dark:text-blue-300">${source === 'live' ? 'Live from GitHub' : 'GitHub cached'}</span>
+							</div>
+							<p class="mt-4 flex-1 text-sm leading-6 text-zinc-600 dark:text-zinc-300">${description}</p>
+							<div class="mt-4 flex flex-wrap gap-2">
+								${language ? `<span class="inline-flex items-center rounded-md bg-zinc-100 px-2 py-1 text-xs text-zinc-600 dark:bg-zinc-900 dark:text-zinc-300">${language}</span>` : ''}
+							</div>
+							<div class="mt-5 flex flex-wrap items-center justify-between gap-3 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+								<div class="flex items-center gap-3">
+									<span>★ ${repo.stargazers_count || 0}</span>
+									<span>⑂ ${repo.forks_count || 0}</span>
+									<span>${updatedStr}</span>
+								</div>
+								<div class="flex items-center gap-2">
+									<a href="${repoUrl}" target="_blank" rel="noreferrer" class="font-medium text-zinc-700 no-underline hover:text-[rgb(180,126,36)] dark:text-zinc-200 dark:hover:text-[rgb(226,190,110)]">Repository ↗</a>
+									${repo.homepage && safeExternalUrl(repo.homepage) ? `<a href="${safeExternalUrl(repo.homepage)}" target="_blank" rel="noreferrer" class="font-medium text-zinc-700 no-underline hover:text-[rgb(180,126,36)] dark:text-zinc-200 dark:hover:text-[rgb(226,190,110)]">Website ↗</a>` : ''}
+								</div>
+							</div>
+						`;
+
+						root.appendChild(card);
+					});
+				}
 			}
 
 			async function initGitHubProjects() {

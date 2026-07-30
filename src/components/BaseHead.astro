@@ -140,7 +140,8 @@ const cfWebAnalyticsToken = import.meta.env.PUBLIC_CF_WEB_ANALYTICS_TOKEN;
 	(function() {
 		// Dynamically determine API base based on current host
 		const isLocalhost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-		const API_BASE = isLocalhost ? 'http://localhost:8787' : 'https://api.example.com';
+		const PROD_API = window.__ENV_API_BASE || '';
+		const API_BASE = isLocalhost ? 'http://localhost:8787' : (PROD_API || '');
 		const TOKEN_KEY = 'blog_token';
 
 		// Store on window

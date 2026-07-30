@@ -1,0 +1,32 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "alexblog-cms-api",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-07-30",
+  "compatibility_flags": ["nodejs_compat"],
+  "routes": [
+    {
+      "pattern": "letsgogogogogo.pp.ua/admin/api/*",
+      "zone_name": "letsgogogogogo.pp.ua"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSIONS",
+      "id": "0945d34dca824bb68804d41d96241006"
+    }
+  ],
+  "vars": {
+    "PUBLIC_APP_ORIGIN": "https://letsgogogogogo.pp.ua",
+    "GITHUB_OWNER": "wublinux",
+    "GITHUB_REPO": "AlexBlog",
+    "GITHUB_BRANCH": "V2.0.0",
+    "GITHUB_OAUTH_SCOPE": "public_repo",
+    "BLOG_BASE_PATH": "src/content/blog",
+    "IMAGE_BASE_PATH": "public/image"
+  },
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
+}

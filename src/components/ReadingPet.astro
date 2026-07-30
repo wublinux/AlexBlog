@@ -1,0 +1,109 @@
+---
+/*
+ * Reading progress pet — a small character that follows scroll progress.
+ * Place pet images in /public/image/pet/
+ */
+interface Props {
+	/** Pet image URL (relative to public/) */
+	image?: string;
+	/** Pet name for accessibility */
+	name?: string;
+	/** Position: bottom-left or bottom-right */
+	position?: 'left' | 'right';
+}
+
+const {
+	image = '/image/pet/04cfe4a26bdc7888faeb0c750d5a24b4.jpg',
+	name = 'Reading buddy',
+	position = 'left',
+} = Astro.props;
+---
+
+<div
+	class:list={[
+		'reading-pet fixed z-50 pointer-events-none transition-opacity duration-500',
+		position === 'right' ? 'right-4' : 'left-4',
+	]}
+	data-reading-pet
+	style="bottom: 2rem; opacity: 0;"
+>
+	<img
+		src={image}
+		alt={name}
+		class="w-12 h-12 drop-shadow-lg"
+		style="image-rendering: pixelated;"
+	/>
+</div>
+
+<script is:inline>
+	(() => {
+		const initPet = () => {
+			const pet = document.querySelector('[data-reading-pet]');
+			if (!pet) return;
+
+			const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+			const update = () => {
+				const scrollTop = window.scrollY;
+				const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+				const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+
+				// Show pet after scrolling 10%
+				if (progress > 0.1) {
+					pet.style.opacity = '1';
+					// Move pet along Y axis based on scroll progress
+					const maxMove = window.innerHeight - 120;
+					const yPos = maxMove * (1 - progress);
+					pet.style.transform = `translateY(${yPos}px)`;
+					if (!reducedMotion) {
+						// Add subtle bounce
+						const bounce = Math.sin(progress * Math.PI * 8) * 3;
+						pet.style.transform = `translateY(${yPos + bounce}px)`;
+					}
+				} else {
+					pet.style.opacity = '0';
+				}
+			};
+
+			let ticking = false;
+			const onScroll = () => {
+				if (ticking) return;
+				ticking = true;
+				requestAnimationFrame(() => {
+					update();
+					ticking = false;
+				});
+			};
+
+			window.addEventListener('scroll', onScroll, { passive: true });
+			update();
+
+			const cleanup = () => {
+				window.removeEventListener('scroll', onScroll);
+			};
+			document.addEventListener('astro:before-swap', cleanup);
+		};
+
+		window.__readingPetInit = initPet;
+		if (!window.__readingPetBound) {
+			window.__readingPetBound = true;
+			document.addEventListener('astro:page-load', () => {
+				requestAnimationFrame(() => window.__readingPetInit?.());
+			});
+		}
+		initPet();
+	})();
+</script>
+
+<style>
+	.reading-pet {
+		transition: opacity 0.5s ease, transform 0.1s ease-out;
+	}
+	.reading-pet img {
+		animation: pet-idle 2s ease-in-out infinite;
+	}
+	@keyframes pet-idle {
+		0%, 100% { transform: translateY(0); }
+		50% { transform: translateY(-4px); }
+	}
+</style>

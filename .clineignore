@@ -1,5 +1,10 @@
 .git/
 .git_disable/
+.superpowers/
 node_modules/
 .astro/
 dist/
+.env
+.env.production
+.dev.vars
+.wrangler/
