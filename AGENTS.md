@@ -8,7 +8,8 @@ inside a subdirectory takes precedence for files in that subtree.
 - The production branch is `V2.0.0`.
 - The public site is the static Astro application at the repository root and is
   deployed to the Cloudflare Pages project `alexblog`.
-- The only dynamic backend is `workers/cms-api`, mounted at `/admin/api/*`.
+- The only dynamic backend is `workers/cms-api`, mounted at `/admin/api/*`
+  plus the exact public read-only route `/api/github-daily`.
 - `docs/PROJECT-PLAN.md` and the current implementation are authoritative.
   Files under `docs/superpowers/` are historical design records, not executable
   instructions.
@@ -42,6 +43,8 @@ inside a subdirectory takes precedence for files in that subtree.
   an absent or unexpected `Origin`.
 - Every content/media/deploy API route must require an authenticated session
   whose GitHub account has `write`, `maintain`, or `admin` repository access.
+- `/api/github-daily` must remain GET/HEAD-only, must not expose README source
+  text or credentials, and must not add permissive CORS.
 - Preserve OAuth `state`, secure `__Host-` cookies, bounded session lifetime,
   SHA-based optimistic concurrency, bounded request bodies, image magic-byte
   checks, and structured non-secret error responses.
@@ -73,7 +76,14 @@ curl -fsS https://letsgogogogogo.pp.ua/admin/api/health
   explicitly requests deployment or completion of an already-authorized
   production rollout.
 - Deploy the Worker from `workers/cms-api` with `npm run deploy`.
-- Deploy Pages through the existing GitHub Actions workflow or the configured
-  `alexblog` Pages project; do not create a second project.
+- Production Pages deployments must run only through the existing GitHub
+  Actions workflow after committed changes reach the latest remote `V2.0.0`.
+  Never run `wrangler pages deploy` against production from a local worktree,
+  especially from a dirty or detached checkout.
+- Before pushing a production change, fetch `origin/V2.0.0` and preserve every
+  newer content/media commit. Never deploy a source revision older than the
+  remote production tip.
+- Keep using the configured `alexblog` Pages project; do not create a second
+  project.
 - Use focused, descriptive commits. Stage only reviewed files, keep ignored
   runtime artifacts out of commits, and report any uncommitted remainder.

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "astro dev",
     "check:encoding": "node scripts/check-text-encoding.mjs",
+    "verify:production-source": "node scripts/verify-production-source.mjs",
     "build": "npm run check:encoding && astro build && node scripts/ensure-sitemap-xml.mjs",
     "postbuild": "node scripts/postbuild-sitemap.mjs",
     "brand:og": "node scripts/generate-og-image.mjs",

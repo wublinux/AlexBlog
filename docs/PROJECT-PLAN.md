@@ -1,14 +1,18 @@
-# AlexBlog CMS 项目计划
+# AlexBlog CMS 与 GitHub Daily 项目计划
 
-> **项目状态**：代码、云端配置与生产登录联调完成
+> **项目状态**：CMS 与 GitHub Daily 均已上线；首个生产快照已验证
 > **分支**：`V2.0.0`
-> **更新日期**：2026-07-30
+> **更新日期**：2026-08-01
 
 ## 项目目标
 
 在现有 Astro 博客中提供一个仅仓库协作者可使用的管理后台。用户通过
 GitHub OAuth 登录后，可以管理 Markdown/MDX 文章和媒体文件；内容写入
 GitHub 后，由现有 GitHub Actions 自动部署到 Cloudflare Pages。
+
+同时提供公开的 GitHub Daily 页面，每天香港时间 09:00 与 16:00 汇总过去
+24 小时新建并获得较多 Star 的公开仓库，以项目卡片和 README 辅助的中文
+AI 短评帮助读者快速判断是否值得进一步了解。
 
 ## 计划审查后的调整
 
@@ -97,6 +101,24 @@ GitHub 后，由现有 GitHub Actions 自动部署到 Cloudflare Pages。
 - [x] 历史设计文档标记为非执行指令
 - [x] OAuth `state` 使用固定长度摘要和常量时间比较
 
+### Task 9：GitHub Daily
+
+- [x] 新增 `/github-daily/` 页面与主导航入口
+- [x] 响应式 Top 9 项目卡、更新时间、过期提示和失败状态
+- [x] 新增公开只读 `/api/github-daily` 接口
+- [x] 按过去 24 小时创建时间筛选 GitHub 仓库并按 Star 排序
+- [x] README 有界读取、提示注入隔离和 Workers AI 结构化中文短评
+- [x] AI 局部失败规则化降级，GitHub 失败保留最后成功快照
+- [x] 每天香港时间 09:00、16:00 的 Worker Cron
+- [x] GitHub Daily 数据管道、缓存接口与现有健康接口的单元测试
+
+### Task 10：生产发布防覆盖
+
+- [x] Pages 生产发布仅允许通过 `V2.0.0` 的 GitHub Actions 工作流
+- [x] 发布前重新获取远端生产分支并校验构建提交等于最新远端提交
+- [x] 使用工作流并发锁取消落后的生产发布任务
+- [x] 禁止从脏工作树、分离 HEAD 或落后提交直接上传 Pages 生产版本
+
 ## 仍需一次性云端配置
 
 以下步骤需要 Cloudflare 与 GitHub 账号权限，不能在仓库中预填：
@@ -111,6 +133,12 @@ GitHub 后，由现有 GitHub Actions 自动部署到 Cloudflare Pages。
 5. [x] 已发布 Cloudflare Pages `alexblog` 的 `V2.0.0` 分支，并用
    `wublinux` 协作者账号完成生产 OAuth 登录，成功进入 `/admin/dashboard/`。
    `/admin/api/health` 返回 `{"ok":true}`。
+6. [x] 创建独立的 GitHub Daily KV namespace，将返回的 ID 写入
+   `GITHUB_DAILY` 绑定；不得复用只存储 OAuth 状态和会话的 `SESSIONS`。
+7. [x] 在明确授权后部署 Worker，确认 Cron、Workers AI 绑定与
+   `/api/github-daily` 精确公开路由生效，并等待首个成功快照。
+8. [x] Worker 快照可用后，将 GitHub Daily 静态页面发布到现有
+   `alexblog` Pages 项目，不创建第二个项目。
 
 具体命令和注意事项见
 [`workers/cms-api/README.md`](../workers/cms-api/README.md)。
@@ -123,3 +151,7 @@ GitHub 后，由现有 GitHub Actions 自动部署到 Cloudflare Pages。
 - 新建或编辑文章后，GitHub 中的 frontmatter 可通过 Astro 内容 Schema。
 - 上传文件只能落在 `public/image`，并返回可用的 Markdown URL。
 - GitHub Actions 状态可在后台查看，成功提交会触发现有 Pages 工作流。
+- GitHub Daily 只展示符合筛选条件的最多 9 个项目，README 原文不写入 KV
+  或公开 API，所有外链与动态文本均经过校验或以纯文本渲染。
+- GitHub 或 AI 暂时失败时，页面不会暴露错误细节或删除最后一次成功结果；
+  超过 24 小时的快照会明确标记为可能过期。

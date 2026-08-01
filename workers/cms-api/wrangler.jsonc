@@ -8,14 +8,28 @@
     {
       "pattern": "letsgogogogogo.pp.ua/admin/api/*",
       "zone_name": "letsgogogogogo.pp.ua"
+    },
+    {
+      "pattern": "letsgogogogogo.pp.ua/api/github-daily",
+      "zone_name": "letsgogogogogo.pp.ua"
     }
   ],
   "kv_namespaces": [
     {
       "binding": "SESSIONS",
       "id": "0945d34dca824bb68804d41d96241006"
+    },
+    {
+      "binding": "GITHUB_DAILY",
+      "id": "df031925d3ab4bd994ec66ff0307e5c4"
     }
   ],
+  "ai": {
+    "binding": "AI"
+  },
+  "triggers": {
+    "crons": ["0 1,8 * * *"]
+  },
   "vars": {
     "PUBLIC_APP_ORIGIN": "https://letsgogogogogo.pp.ua",
     "GITHUB_OWNER": "wublinux",

@@ -1,0 +1,395 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Footer from '../../components/Footer.astro';
+import Header from '../../components/Header.astro';
+import MeteorShower from '../../components/MeteorShower.astro';
+import MobileDrawer from '../../components/MobileDrawer.astro';
+import PageHeading from '../../components/PageHeading.astro';
+import { SITE_TITLE } from '../../consts';
+
+const BASE = import.meta.env.BASE_URL;
+const apiUrl = `${BASE}api/github-daily`;
+---
+
+<!doctype html>
+<html lang="zh-CN">
+	<head>
+		<BaseHead
+			title={`GitHub Daily | ${SITE_TITLE}`}
+			description="每天两次发现过去 24 小时新建并受到关注的 GitHub 开源项目，附项目简介与 AI 中文短评。"
+		/>
+	</head>
+	<body>
+		<MeteorShower density={0.42} heightVh={38} />
+		<Header />
+		<MobileDrawer />
+		<main
+			class="mx-auto flex max-w-6xl flex-col px-4 py-12"
+			transition:name="page-main"
+			transition:animate="fade"
+			data-github-daily-root
+			data-api-url={apiUrl}
+		>
+			<PageHeading
+				eyebrow="Open-source radar"
+				title="GitHub"
+				accent="Daily"
+				subtitle="发现过去 24 小时新建、正在获得关注的开源项目。每天香港时间 09:00 与 16:00 更新。"
+			/>
+
+			<section class="section-enter section-enter-delay-1 mt-8 grid gap-3 sm:grid-cols-3" aria-label="榜单说明">
+				<div class="rounded-2xl border border-zinc-200/80 bg-white/82 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/72">
+					<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Window</p>
+					<p class="mt-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">滚动 24 小时</p>
+					<p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">仅统计新创建的公开仓库</p>
+				</div>
+				<div class="rounded-2xl border border-zinc-200/80 bg-white/82 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/72">
+					<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Ranking</p>
+					<p class="mt-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">按 Star 排序 · Top 9</p>
+					<p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">排除 Fork、模板、镜像与归档项目</p>
+				</div>
+				<div class="rounded-2xl border border-zinc-200/80 bg-white/82 p-4 shadow-[0_10px_30px_rgba(15,23,42,0.04)] backdrop-blur dark:border-zinc-800/80 dark:bg-zinc-900/72">
+					<p class="text-[11px] font-semibold uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">Review</p>
+					<p class="mt-2 text-sm font-medium text-zinc-800 dark:text-zinc-200">README 辅助中文短评</p>
+					<p class="mt-1 text-xs leading-5 text-zinc-500 dark:text-zinc-400">编辑摘要，不代表代码或安全审计</p>
+				</div>
+			</section>
+
+			<div
+				class="mt-6 hidden items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50/90 px-4 py-3 text-sm leading-6 text-amber-900 dark:border-amber-900/70 dark:bg-amber-950/45 dark:text-amber-200"
+				data-stale-banner
+				role="status"
+			>
+				<span aria-hidden="true">◷</span>
+				<span>本次自动更新未能按时完成，当前展示的是最近一次成功结果。</span>
+			</div>
+
+			<section class="mt-8" aria-labelledby="daily-list-title">
+				<div class="flex flex-col gap-3 border-b border-zinc-200/80 pb-4 dark:border-zinc-800/80 sm:flex-row sm:items-end sm:justify-between">
+					<div>
+						<h2 id="daily-list-title" class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">今日项目</h2>
+						<p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400" data-daily-status aria-live="polite">
+							正在读取最新榜单…
+						</p>
+					</div>
+					<dl class="grid grid-cols-2 gap-x-5 gap-y-1 text-xs text-zinc-500 dark:text-zinc-400">
+						<div>
+							<dt class="inline text-zinc-400 dark:text-zinc-500">更新：</dt>
+							<dd class="inline" data-generated-at>—</dd>
+						</div>
+						<div>
+							<dt class="inline text-zinc-400 dark:text-zinc-500">下次：</dt>
+							<dd class="inline" data-next-update>—</dd>
+						</div>
+					</dl>
+				</div>
+
+				<div
+					class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+					data-daily-grid
+					aria-busy="true"
+				>
+					{
+						Array.from({ length: 9 }, (_, index) => (
+							<article class="min-h-[390px] animate-pulse rounded-2xl border border-zinc-200/80 bg-white/75 p-5 dark:border-zinc-800/80 dark:bg-zinc-900/65" aria-hidden="true">
+								<div class="flex items-center justify-between">
+									<div class="h-10 w-10 rounded-xl bg-zinc-200 dark:bg-zinc-800"></div>
+									<div class="h-6 w-9 rounded-full bg-zinc-200 dark:bg-zinc-800"></div>
+								</div>
+								<div class="mt-5 h-5 w-3/4 rounded bg-zinc-200 dark:bg-zinc-800"></div>
+								<div class="mt-3 h-4 w-full rounded bg-zinc-100 dark:bg-zinc-800/75"></div>
+								<div class="mt-2 h-4 w-5/6 rounded bg-zinc-100 dark:bg-zinc-800/75"></div>
+								<div class="mt-5 flex gap-2">
+									<div class="h-6 w-16 rounded-full bg-zinc-100 dark:bg-zinc-800/75"></div>
+									<div class="h-6 w-20 rounded-full bg-zinc-100 dark:bg-zinc-800/75"></div>
+								</div>
+								<div class="mt-6 h-24 rounded-xl bg-zinc-100 dark:bg-zinc-800/75"></div>
+								<span class="sr-only">Loading project {index + 1}</span>
+							</article>
+						))
+					}
+				</div>
+
+				<div
+					class="mt-6 hidden rounded-2xl border border-zinc-200 bg-white/85 px-6 py-10 text-center dark:border-zinc-800 dark:bg-zinc-900/75"
+					data-daily-error
+					role="alert"
+				>
+					<p class="text-base font-medium text-zinc-800 dark:text-zinc-200" data-daily-error-message>榜单暂时不可用。</p>
+					<p class="mt-2 text-sm leading-6 text-zinc-500 dark:text-zinc-400">最后一次成功数据不会被失败任务覆盖，请稍后再试。</p>
+					<button
+						type="button"
+						class="apple-float-chip mt-5 rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-2 text-sm font-medium text-zinc-700 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+						data-daily-retry
+					>
+						<span class="apple-float-label">重新加载</span>
+					</button>
+				</div>
+			</section>
+
+			<p class="mt-8 text-center text-xs leading-6 text-zinc-400 dark:text-zinc-500">
+				项目资料来自 GitHub 公共信息；AI 短评只用于快速了解方向，采用任何项目之前请自行核对许可证、维护状态与代码。
+			</p>
+		</main>
+		<Footer />
+
+		<template id="github-daily-card-template">
+			<article class="card-spotlight group relative flex min-h-[390px] flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white/92 p-5 shadow-[0_12px_34px_rgba(15,23,42,0.055)] transition-all duration-200 hover:-translate-y-0.5 hover:border-zinc-300 hover:shadow-[0_18px_42px_rgba(15,23,42,0.09)] dark:border-zinc-800 dark:bg-zinc-900/88 dark:hover:border-zinc-700 dark:hover:shadow-[0_20px_44px_rgba(0,0,0,0.24)]">
+				<div class="flex items-start justify-between gap-3">
+					<div class="flex min-w-0 items-center gap-3">
+						<img
+							data-owner-avatar
+							class="h-11 w-11 shrink-0 rounded-xl border border-zinc-200 bg-zinc-100 object-cover dark:border-zinc-700 dark:bg-zinc-800"
+							width="44"
+							height="44"
+							loading="lazy"
+							alt=""
+						/>
+						<div class="min-w-0">
+							<p class="truncate text-xs font-medium text-zinc-400 dark:text-zinc-500" data-owner-login></p>
+							<h3 class="mt-0.5 truncate text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100" data-project-name></h3>
+						</div>
+					</div>
+					<span class="inline-flex h-8 min-w-8 shrink-0 items-center justify-center rounded-full border border-[rgba(180,126,36,0.3)] bg-[rgba(180,126,36,0.08)] px-2 text-xs font-semibold text-[rgb(143,96,24)] dark:border-[rgba(226,190,110,0.32)] dark:bg-[rgba(226,190,110,0.1)] dark:text-[rgb(226,190,110)]" data-rank></span>
+				</div>
+
+				<p class="mt-4 min-h-[72px] text-sm leading-6 text-zinc-600 dark:text-zinc-300" data-description></p>
+
+				<div class="mt-4 flex min-h-7 flex-wrap gap-2" data-tags></div>
+
+				<div class="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2 border-t border-zinc-100 pt-4 text-xs text-zinc-500 dark:border-zinc-800 dark:text-zinc-400">
+					<span title="Stars">★ <span data-stars></span></span>
+					<span title="Forks">⑂ <span data-forks></span></span>
+					<span>创建于 <span data-created-at></span></span>
+				</div>
+
+				<div class="mt-5 rounded-xl border border-zinc-200/80 bg-zinc-50/88 p-4 dark:border-zinc-700/80 dark:bg-zinc-950/60">
+					<div class="flex flex-wrap items-center gap-2">
+						<span class="text-[11px] font-semibold uppercase tracking-[0.16em] text-[rgb(143,96,24)] dark:text-[rgb(226,190,110)]" data-review-label>AI 短评</span>
+						<span class="rounded-full bg-white px-2 py-0.5 text-[10px] text-zinc-400 ring-1 ring-zinc-200 dark:bg-zinc-900 dark:text-zinc-500 dark:ring-zinc-700" data-readme-state></span>
+					</div>
+					<p class="mt-2 text-[13px] leading-6 text-zinc-600 dark:text-zinc-300" data-review></p>
+				</div>
+
+				<div class="mt-auto flex items-center gap-3 pt-5">
+					<a
+						data-repository-link
+						class="apple-visit-button inline-flex flex-1 items-center justify-center rounded-xl border border-zinc-300 bg-zinc-50 px-3 py-2.5 text-sm font-medium text-zinc-700 no-underline dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-200"
+						target="_blank"
+						rel="noreferrer"
+					>
+						<span class="apple-visit-label">Repository ↗</span>
+					</a>
+					<a
+						data-homepage-link
+						class="apple-visit-button hidden items-center justify-center rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-sm font-medium text-zinc-700 no-underline dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-200"
+						target="_blank"
+						rel="noreferrer"
+					>
+						<span class="apple-visit-label">Website ↗</span>
+					</a>
+				</div>
+			</article>
+		</template>
+
+		<script>
+			type DailyItem = {
+				rank: number;
+				fullName: string;
+				name: string;
+				owner: { login: string; avatarUrl: string };
+				description: string | null;
+				repositoryUrl: string;
+				homepageUrl: string | null;
+				language: string | null;
+				topics: string[];
+				stars: number;
+				forks: number;
+				createdAt: string;
+				review: {
+					text: string;
+					source: 'ai' | 'fallback';
+					basedOnReadme: boolean;
+				};
+			};
+
+			type DailyResponse = {
+				generatedAt: string;
+				windowStart: string;
+				windowEnd: string;
+				nextUpdateAt: string;
+				stale: boolean;
+				items: DailyItem[];
+				error?: { message?: string };
+			};
+
+			const formatDateTime = (value: string) => {
+				const date = new Date(value);
+				if (!Number.isFinite(date.getTime())) return '—';
+				return new Intl.DateTimeFormat('zh-CN', {
+					timeZone: 'Asia/Hong_Kong',
+					month: '2-digit',
+					day: '2-digit',
+					hour: '2-digit',
+					minute: '2-digit',
+					hour12: false,
+				}).format(date);
+			};
+
+			const formatDate = (value: string) => {
+				const date = new Date(value);
+				if (!Number.isFinite(date.getTime())) return '—';
+				return new Intl.DateTimeFormat('zh-CN', {
+					timeZone: 'Asia/Hong_Kong',
+					month: 'short',
+					day: 'numeric',
+				}).format(date);
+			};
+
+			const formatNumber = new Intl.NumberFormat('zh-CN', {
+				notation: 'compact',
+				maximumFractionDigits: 1,
+			});
+
+			const safeHttpsUrl = (value: unknown) => {
+				if (typeof value !== 'string') return null;
+				try {
+					const url = new URL(value);
+					return url.protocol === 'https:' ? url.href : null;
+				} catch {
+					return null;
+				}
+			};
+
+			const setText = (root: ParentNode, selector: string, value: string) => {
+				const node = root.querySelector<HTMLElement>(selector);
+				if (node) node.textContent = value;
+			};
+
+			const createTag = (label: string, emphasized = false) => {
+				const tag = document.createElement('span');
+				tag.className = emphasized
+					? 'rounded-full border border-blue-200 bg-blue-50 px-2.5 py-1 text-[11px] font-medium text-blue-700 dark:border-blue-900 dark:bg-blue-950/45 dark:text-blue-300'
+					: 'rounded-full border border-zinc-200 bg-zinc-50 px-2.5 py-1 text-[11px] text-zinc-500 dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-300';
+				tag.textContent = label;
+				return tag;
+			};
+
+			const renderCard = (template: HTMLTemplateElement, item: DailyItem) => {
+				const fragment = template.content.cloneNode(true) as DocumentFragment;
+				const card = fragment.querySelector<HTMLElement>('article');
+				if (!card) return fragment;
+
+				setText(card, '[data-rank]', `#${item.rank}`);
+				setText(card, '[data-owner-login]', item.owner.login);
+				setText(card, '[data-project-name]', item.name);
+				setText(card, '[data-description]', item.description || '项目暂未提供简介，可从 README 与仓库内容进一步了解。');
+				setText(card, '[data-stars]', formatNumber.format(item.stars));
+				setText(card, '[data-forks]', formatNumber.format(item.forks));
+				setText(card, '[data-created-at]', formatDate(item.createdAt));
+				setText(card, '[data-review]', item.review.text);
+				setText(card, '[data-review-label]', item.review.source === 'ai' ? 'AI 短评' : '规则短评');
+				setText(card, '[data-readme-state]', item.review.basedOnReadme ? '参考 README' : '仅参考元数据');
+
+				const avatar = card.querySelector<HTMLImageElement>('[data-owner-avatar]');
+				const avatarUrl = safeHttpsUrl(item.owner.avatarUrl);
+				if (avatar && avatarUrl) {
+					avatar.src = avatarUrl;
+					avatar.alt = `${item.owner.login} avatar`;
+					avatar.addEventListener('error', () => avatar.classList.add('invisible'), { once: true });
+				} else {
+					avatar?.classList.add('invisible');
+				}
+
+				const tags = card.querySelector<HTMLElement>('[data-tags]');
+				if (tags) {
+					if (item.language) tags.append(createTag(item.language, true));
+					for (const topic of item.topics.slice(0, 4)) tags.append(createTag(topic));
+				}
+
+				const repositoryLink = card.querySelector<HTMLAnchorElement>('[data-repository-link]');
+				const repositoryUrl = safeHttpsUrl(item.repositoryUrl);
+				if (repositoryLink && repositoryUrl) repositoryLink.href = repositoryUrl;
+
+				const homepageLink = card.querySelector<HTMLAnchorElement>('[data-homepage-link]');
+				const homepageUrl = safeHttpsUrl(item.homepageUrl);
+				if (homepageLink && homepageUrl) {
+					homepageLink.href = homepageUrl;
+					homepageLink.classList.remove('hidden');
+					homepageLink.classList.add('inline-flex');
+				}
+
+				return fragment;
+			};
+
+			const initGitHubDaily = () => {
+				const root = document.querySelector<HTMLElement>('[data-github-daily-root]');
+				if (!root || root.dataset.bound === 'true') return;
+				root.dataset.bound = 'true';
+
+				const grid = root.querySelector<HTMLElement>('[data-daily-grid]');
+				const status = root.querySelector<HTMLElement>('[data-daily-status]');
+				const generatedAt = root.querySelector<HTMLElement>('[data-generated-at]');
+				const nextUpdate = root.querySelector<HTMLElement>('[data-next-update]');
+				const staleBanner = root.querySelector<HTMLElement>('[data-stale-banner]');
+				const errorBox = root.querySelector<HTMLElement>('[data-daily-error]');
+				const errorMessage = root.querySelector<HTMLElement>('[data-daily-error-message]');
+				const retryButton = root.querySelector<HTMLButtonElement>('[data-daily-retry]');
+				const template = document.getElementById('github-daily-card-template') as HTMLTemplateElement | null;
+				const apiUrl = root.dataset.apiUrl;
+				if (!grid || !status || !template || !apiUrl) return;
+
+				const showError = (message: string) => {
+					grid.replaceChildren();
+					grid.classList.add('hidden');
+					grid.setAttribute('aria-busy', 'false');
+					errorBox?.classList.remove('hidden');
+					if (errorMessage) errorMessage.textContent = message;
+					status.textContent = '本次读取失败';
+				};
+
+				const load = async () => {
+					status.textContent = '正在读取最新榜单…';
+					retryButton?.setAttribute('disabled', 'true');
+					try {
+						const response = await fetch(apiUrl, {
+							headers: { Accept: 'application/json' },
+						});
+						const payload = (await response.json()) as DailyResponse;
+						if (!response.ok) {
+							throw new Error(payload.error?.message || '榜单暂时不可用。');
+						}
+						if (!Array.isArray(payload.items)) throw new Error('榜单数据格式无效。');
+
+						const cards = document.createDocumentFragment();
+						for (const item of payload.items) cards.append(renderCard(template, item));
+						grid.replaceChildren(cards);
+						grid.classList.remove('hidden');
+						grid.setAttribute('aria-busy', 'false');
+						errorBox?.classList.add('hidden');
+
+						if (payload.items.length) {
+							status.textContent = `本期共 ${payload.items.length} 个项目 · 观察窗口 ${formatDateTime(payload.windowStart)} 至 ${formatDateTime(payload.windowEnd)}`;
+						} else {
+							status.textContent = '当前观察窗口内没有符合条件的项目。';
+						}
+						if (generatedAt) generatedAt.textContent = formatDateTime(payload.generatedAt);
+						if (nextUpdate) nextUpdate.textContent = formatDateTime(payload.nextUpdateAt);
+						staleBanner?.classList.toggle('hidden', !payload.stale);
+						staleBanner?.classList.toggle('flex', payload.stale);
+					} catch (error) {
+						showError(error instanceof Error ? error.message : '榜单暂时不可用。');
+					} finally {
+						retryButton?.removeAttribute('disabled');
+					}
+				};
+
+				retryButton?.addEventListener('click', load);
+				void load();
+			};
+
+			initGitHubDaily();
+			document.addEventListener('astro:page-load', initGitHubDaily);
+		</script>
+	</body>
+</html>

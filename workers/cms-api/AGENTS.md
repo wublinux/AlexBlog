@@ -6,12 +6,14 @@ These rules apply to `workers/cms-api` and supplement the repository-level
 ## Runtime contract
 
 - Worker name: `alexblog-cms-api`.
-- Production route: `letsgogogogogo.pp.ua/admin/api/*`.
+- Production routes: `letsgogogogogo.pp.ua/admin/api/*` and the exact public
+  read-only route `letsgogogogogo.pp.ua/api/github-daily`.
 - Public origin: `https://letsgogogogogo.pp.ua`.
 - GitHub target: `wublinux/AlexBlog`, branch `V2.0.0`.
 - Allowed write roots: `src/content/blog` and `public/image`.
-- KV binding: `SESSIONS`. It stores short-lived OAuth state and authenticated
-  sessions only.
+- KV bindings: `SESSIONS` stores short-lived OAuth state and authenticated
+  sessions only; `GITHUB_DAILY` stores only the latest public ranking snapshot.
+- The Workers AI binding is `AI`; GitHub Daily refreshes at 01:00 and 08:00 UTC.
 
 Changing any item above requires explicit user authorization and a coordinated
 update to OAuth, Wrangler configuration, tests, documentation, and production
@@ -30,8 +32,10 @@ verification.
 
 ## API invariants
 
-- `/admin/api/health` is the only unauthenticated data route.
-- Keep routing under `/admin/api/*`; do not add wildcard proxy behavior.
+- `/admin/api/health` is the only unauthenticated CMS data route.
+- `/api/github-daily` is the only public data exception. Keep it GET/HEAD-only,
+  omit permissive CORS, and never return README source text.
+- Keep all other routing under `/admin/api/*`; do not add wildcard proxy behavior.
 - Run `requireSameOrigin` before routing protected APIs. Do not add permissive
   CORS or accept cross-origin mutations.
 - Require `authenticate` for posts, media, and deployment status.
