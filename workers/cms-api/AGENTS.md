@@ -19,6 +19,20 @@ Changing any item above requires explicit user authorization and a coordinated
 update to OAuth, Wrangler configuration, tests, documentation, and production
 verification.
 
+## GitHub Daily acceptance contract
+
+Public snapshot items are validated on read. **Write paths must satisfy the same
+limits before `GITHUB_DAILY` put** (AI reviews and `fallbackReview` alike).
+
+- `review.text`: string length **24–260** (same metric as `isDailyItem` / `parseSnapshot`)
+- Do not concatenate unbounded `description` / README into the final review
+- Bound/truncate every review with the shared helper before persistence
+- Prefer dropping a single invalid item over failing the entire snapshot with 503
+- Add a regression fixture with an oversized description that still yields a
+  readable snapshot after refresh
+
+Agent guidance for this class of bug: skill `acceptance-bounded-output`.
+
 ## Secrets and types
 
 - `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET` are Worker Secrets. Never add
