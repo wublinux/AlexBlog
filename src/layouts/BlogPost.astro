@@ -10,7 +10,6 @@ import MobileDrawer from '../components/MobileDrawer.astro';
 import TocSidebar from '../components/TocSidebar.astro';
 import TocDrawer from '../components/TocDrawer.astro';
 import Giscus from '../components/Giscus.astro';
-import ReadingPet from '../components/ReadingPet.astro';
 import { getPostAnalyticsKey } from '../utils/postAnalytics';
 import { getTagSlug } from '../utils/tags';
 
@@ -212,7 +211,10 @@ const charsLabel = chars.toLocaleString('en-US');
 							)}
 						</header>
 
-						<article class="section-enter min-w-0 w-full max-w-none">
+						<article
+							class="section-enter min-w-0 w-full max-w-none"
+							data-blog-article={metaMode !== 'page' ? '' : undefined}
+						>
 							{
 								heroImage &&
 									(typeof heroImage === 'string' ? (
@@ -305,8 +307,6 @@ const charsLabel = chars.toLocaleString('en-US');
 		</main>
 
 		<Footer />
-
-		<ReadingPet />
 
 		<button type="button" class="back-to-top" data-back-to-top aria-label="Back to top">
 			<svg class="back-to-top-ring" viewBox="0 0 48 48" aria-hidden="true">

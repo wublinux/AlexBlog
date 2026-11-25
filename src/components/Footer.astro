@@ -1,8 +1,9 @@
 ﻿---
 /*
- * Global footer shared by every page.
- * Keeps ownership/legal text centralized so layout-level pages stay content-focused.
+ * Global footer shared by every public page (never rendered on /admin/*).
+ * Also hosts the persistent Pidan page companion so state survives route transitions.
  */
+import ReadingPet from './ReadingPet.astro';
 
 const today = new Date();
 ---
@@ -12,3 +13,5 @@ const today = new Date();
 		<p class="m-0">&copy; {today.getFullYear()} Alex Huang. All rights reserved.</p>
 	</div>
 </footer>
+
+<ReadingPet />

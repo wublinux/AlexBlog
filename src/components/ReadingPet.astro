@@ -1,109 +1,2047 @@
 ---
-/*
- * Reading progress pet — a small character that follows scroll progress.
- * Place pet images in /public/image/pet/
- */
-interface Props {
-	/** Pet image URL (relative to public/) */
-	image?: string;
-	/** Pet name for accessibility */
-	name?: string;
-	/** Position: bottom-left or bottom-right */
-	position?: 'left' | 'right';
-}
+import { PIDAN_DIALOGUES, PIDAN_PHOTO_CARDS, PIDAN_PROFILE } from '../data/pet/pidan';
 
-const {
-	image = '/image/pet/04cfe4a26bdc7888faeb0c750d5a24b4.jpg',
-	name = 'Reading buddy',
-	position = 'left',
-} = Astro.props;
+const BASE = import.meta.env.BASE_URL;
+const cardsPayload = PIDAN_PHOTO_CARDS.map((card) => ({
+	...card,
+	src: `${BASE}${card.image}`,
+}));
 ---
 
 <div
-	class:list={[
-		'reading-pet fixed z-50 pointer-events-none transition-opacity duration-500',
-		position === 'right' ? 'right-4' : 'left-4',
-	]}
-	data-reading-pet
-	style="bottom: 2rem; opacity: 0;"
+	id="pidan-companion"
+	class="pidan-root"
+	transition:persist="pidan-pet"
+	data-pidan-root
+	data-mode="chibi"
+	data-minimized="false"
+	data-state="idle"
+	data-facing="right"
+	data-collar="false"
+	aria-label={`${PIDAN_PROFILE.name}页面宠物`}
 >
-	<img
-		src={image}
-		alt={name}
-		class="w-12 h-12 drop-shadow-lg"
-		style="image-rendering: pixelated;"
-	/>
+	<!-- 1. Minimized Corner Nest Pill (shown when user tucks Pidan into his nest) -->
+	<button
+		type="button"
+		class="pidan-nest-pill"
+		data-pidan-restore
+		aria-label="唤醒皮蛋"
+		hidden
+	>
+		<span class="pidan-nest-dot" aria-hidden="true">🐾</span>
+		<span class="pidan-nest-text" data-pidan-nest-label>唤醒皮蛋</span>
+	</button>
+
+	<!-- 2. Dynamic Chibi Pidan Stage (Pure vector rigged pet — zero raw photo motion) -->
+	<div class="pidan-stage" data-pidan-stage>
+		<!-- Speech Bubble -->
+		<div class="pidan-bubble" data-pidan-bubble role="status" aria-live="polite" hidden>
+			<span data-pidan-bubble-text></span>
+		</div>
+
+		<!-- Floating Action Toolbar -->
+		<div class="pidan-toolbar" data-pidan-toolbar role="toolbar" aria-label="皮蛋互动菜单">
+			<button type="button" class="pidan-tool-btn" data-pidan-feed title="投喂小鱼干">
+				<span aria-hidden="true">🐟</span>
+				<span>投喂</span>
+				<span class="pidan-fish-count" data-pidan-fish-count hidden>0</span>
+			</button>
+			<button type="button" class="pidan-tool-btn" data-pidan-collar title="戴/摘小鱼甜甜圈">
+				<span aria-hidden="true">🍩</span>
+				<span>小鱼圈</span>
+			</button>
+			<button type="button" class="pidan-tool-btn pidan-tool-btn-accent" data-pidan-to-real title="切换到真实皮蛋萌照卡">
+				<span aria-hidden="true">📸</span>
+				<span>真猫</span>
+			</button>
+			<span class="pidan-progress-chip" data-pidan-progress hidden>0%</span>
+			<button type="button" class="pidan-tool-btn pidan-tool-btn-icon" data-pidan-minimize title="收进角落猫窝" aria-label="收进角落猫窝">
+				<span aria-hidden="true">💤</span>
+			</button>
+		</div>
+
+		<!-- Particle Effects Layer (hearts, fish, zzz, sparkles) -->
+		<div class="pidan-fx-layer" data-pidan-fx aria-hidden="true"></div>
+
+		<!-- Interactive Chibi Pidan Hitbox + Rigged SVG -->
+		<button
+			type="button"
+			class="pidan-sprite-btn"
+			data-pidan-hit
+			aria-label="摸摸 Q 版皮蛋（可拖拽移动位置）"
+		>
+			<svg
+				class="pidan-svg"
+				viewBox="0 0 144 132"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+				aria-hidden="true"
+			>
+				<defs>
+					<!-- Fluffy cream-to-milk-tea coat -->
+					<radialGradient id="pidan-coat-grad" cx="50%" cy="38%" r="62%">
+						<stop offset="0%" stop-color="#FFFDF9" />
+						<stop offset="62%" stop-color="#F5EDE0" />
+						<stop offset="100%" stop-color="#DFD0BA" />
+					</radialGradient>
+					<!-- Toasted milk-tea saddle on back -->
+					<linearGradient id="pidan-saddle-grad" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stop-color="#C9B296" stop-opacity="0.72" />
+						<stop offset="100%" stop-color="#A88E70" stop-opacity="0.85" />
+					</linearGradient>
+					<!-- Pure white chest mane -->
+					<linearGradient id="pidan-mane-grad" x1="0.5" y1="0" x2="0.5" y2="1">
+						<stop offset="0%" stop-color="#FFFFFF" />
+						<stop offset="75%" stop-color="#FAF6EE" />
+						<stop offset="100%" stop-color="#EDE4D3" />
+					</linearGradient>
+					<!-- Onigiri fluffy head & cheek wings -->
+					<radialGradient id="pidan-head-grad" cx="50%" cy="48%" r="56%">
+						<stop offset="0%" stop-color="#FCF9F2" />
+						<stop offset="68%" stop-color="#EFE5D4" />
+						<stop offset="100%" stop-color="#D7C5AC" />
+					</radialGradient>
+					<!-- Signature seal-point dark espresso face mask with feathered edges -->
+					<radialGradient id="pidan-mask-grad" cx="50%" cy="56%" r="52%">
+						<stop offset="0%" stop-color="#140E0C" />
+						<stop offset="48%" stop-color="#261A15" />
+						<stop offset="76%" stop-color="#4E382E" />
+						<stop offset="93%" stop-color="#8A7261" stop-opacity="0.62" />
+						<stop offset="100%" stop-color="#CBB8A3" stop-opacity="0" />
+					</radialGradient>
+					<!-- Smoky taupe forehead bridge connecting mask toward ear bases -->
+					<radialGradient id="pidan-brow-grad" cx="50%" cy="55%" r="50%">
+						<stop offset="0%" stop-color="#433027" stop-opacity="0.72" />
+						<stop offset="65%" stop-color="#786151" stop-opacity="0.38" />
+						<stop offset="100%" stop-color="#D7C5AC" stop-opacity="0" />
+					</radialGradient>
+					<!-- Dark seal-brown ears, paws & plume tail -->
+					<linearGradient id="pidan-point-grad" x1="0.5" y1="0" x2="0.5" y2="1">
+						<stop offset="0%" stop-color="#1E1512" />
+						<stop offset="100%" stop-color="#433027" />
+					</linearGradient>
+					<linearGradient id="pidan-tail-grad" x1="0" y1="0" x2="1" y2="1">
+						<stop offset="0%" stop-color="#241915" />
+						<stop offset="65%" stop-color="#3E2C24" />
+						<stop offset="100%" stop-color="#5E463A" />
+					</linearGradient>
+					<!-- Sapphire ice-blue iris matching real Pidan -->
+					<radialGradient id="pidan-iris-grad" cx="45%" cy="38%" r="60%">
+						<stop offset="0%" stop-color="#BCE5FF" />
+						<stop offset="48%" stop-color="#69B7F7" />
+						<stop offset="85%" stop-color="#3579CE" />
+						<stop offset="100%" stop-color="#1F4D8F" />
+					</radialGradient>
+				</defs>
+
+				<!-- Soft ground shadow -->
+				<ellipse class="pidan-shadow" cx="72" cy="123" rx="34" ry="5.5" fill="rgba(24,24,27,0.16)" />
+
+				<!-- Flip wrapper so walking left/right flips cat anatomy cleanly -->
+				<g class="pidan-body-flip">
+					<!-- Lush Dark Plume Tail -->
+					<g class="pidan-tail">
+						<path
+							d="M44 99
+							   C25 100, 11 87, 11 69
+							   C11 58, 17 49, 25 49
+							   C31 49, 36 55, 38 63
+							   C40 71, 41 81, 49 90 Z"
+							fill="url(#pidan-tail-grad)"
+						/>
+						<path
+							d="M14 66 Q10 59 17 53 Q15 61 19 67 Z"
+							fill="#6E5547"
+							opacity="0.55"
+						/>
+					</g>
+
+					<!-- Back Paws (Dark Espresso Socks) -->
+					<g class="pidan-leg pidan-leg-bl">
+						<rect x="46" y="103" width="12" height="18" rx="6" fill="url(#pidan-point-grad)" />
+						<path d="M49 119 v2 M53 119 v2" stroke="#6E5449" stroke-width="1.2" stroke-linecap="round" />
+					</g>
+					<g class="pidan-leg pidan-leg-br">
+						<rect x="84" y="103" width="12" height="18" rx="6" fill="url(#pidan-point-grad)" />
+						<path d="M87 119 v2 M91 119 v2" stroke="#6E5449" stroke-width="1.2" stroke-linecap="round" />
+					</g>
+
+					<!-- Fluffy Torso + Toasted Milk-Tea Saddle -->
+					<g class="pidan-torso">
+						<path
+							d="M36 93 C34 76, 49 67, 72 67 C95 67, 110 76, 108 93 C107 109, 94 115, 72 115 C50 115, 37 109, 36 93 Z"
+							fill="url(#pidan-coat-grad)"
+							stroke="#D6C6B0"
+							stroke-width="1.1"
+						/>
+						<!-- Milk-tea dorsal coat shading -->
+						<path
+							d="M43 82 C50 71, 90 71, 99 83 C95 95, 84 99, 71 99 C56 99, 46 94, 43 82 Z"
+							fill="url(#pidan-saddle-grad)"
+						/>
+
+						<!-- Front Paws (Dark Espresso Mittens) -->
+						<g class="pidan-leg pidan-leg-fl">
+							<rect x="55" y="104" width="12.5" height="18.5" rx="6.2" fill="url(#pidan-point-grad)" />
+							<path d="M58.5 120 v2 M62.5 120 v2" stroke="#6E5449" stroke-width="1.2" stroke-linecap="round" />
+						</g>
+						<g class="pidan-leg pidan-leg-fr">
+							<rect x="77" y="104" width="12.5" height="18.5" rx="6.2" fill="url(#pidan-point-grad)" />
+							<path d="M80.5 120 v2 M84.5 120 v2" stroke="#6E5449" stroke-width="1.2" stroke-linecap="round" />
+						</g>
+
+						<!-- Majestic Pure-White Chest Lion Mane (大围脖) -->
+						<path
+							class="pidan-mane"
+							d="M43 72
+							   C38 81, 40 93, 48 98
+							   Q52 103 57 99
+							   Q63 106 68 101
+							   Q72 108 76 101
+							   Q81 106 87 99
+							   Q92 103 96 98
+							   C104 93, 106 81, 101 72 Z"
+							fill="url(#pidan-mane-grad)"
+							stroke="#E3D7C4"
+							stroke-width="1"
+						/>
+
+						<!-- Optional Light-Blue Fish Donut Collar (小鱼甜甜圈皮肤) -->
+						<g class="pidan-donut-collar">
+							<ellipse cx="72" cy="76" rx="35.5" ry="11.5" fill="#C4E3EE" stroke="#8FBFD1" stroke-width="1.5" />
+							<ellipse cx="72" cy="73.2" rx="20" ry="4.8" fill="#9BCAD9" opacity="0.5" />
+							<!-- Little fish patterns matching real photo -->
+							<g transform="translate(47 75) rotate(-10)">
+								<ellipse cx="0" cy="0" rx="4.2" ry="2.3" fill="#5A96B8" />
+								<polygon points="-4,0 -7,-2.2 -7,2.2" fill="#5A96B8" />
+								<circle cx="2" cy="-0.4" r="0.6" fill="#fff" />
+							</g>
+							<g transform="translate(72 82)">
+								<ellipse cx="0" cy="0" rx="4.4" ry="2.4" fill="#F29AA7" />
+								<polygon points="4.2,0 7.2,-2.2 7.2,2.2" fill="#5A96B8" />
+								<circle cx="-2" cy="-0.4" r="0.6" fill="#fff" />
+							</g>
+							<g transform="translate(96 75) rotate(12)">
+								<ellipse cx="0" cy="0" rx="4" ry="2.2" fill="#F3D06B" />
+								<polygon points="3.8,0 6.6,-2 6.6,2" fill="#7EA8BE" />
+							</g>
+						</g>
+					</g>
+
+					<!-- Big Fluffy Chibi Head (Soft Cloud Onigiri Cheek Ruffs + Seal Mask) -->
+					<g class="pidan-head">
+						<!-- Left Dark Seal Ear + Pale Ear Tufts -->
+						<g class="pidan-ear pidan-ear-l">
+							<path d="M43 34 L34 9 Q34 4 39 6.5 L61 21 Z" fill="url(#pidan-point-grad)" />
+							<path d="M45 29 L39 12.5 L56 22 Z" fill="#594036" opacity="0.72" />
+							<path d="M45 30 Q39 26 36 24 M48 27 Q43 22 40 19" stroke="#F6EFE4" stroke-width="1.5" stroke-linecap="round" opacity="0.9" />
+						</g>
+
+						<!-- Right Dark Seal Ear + Pale Ear Tufts -->
+						<g class="pidan-ear pidan-ear-r">
+							<path d="M101 34 L110 9 Q110 4 105 6.5 L83 21 Z" fill="url(#pidan-point-grad)" />
+							<path d="M99 29 L105 12.5 L88 22 Z" fill="#594036" opacity="0.72" />
+							<path d="M99 30 Q105 26 108 24 M96 27 Q101 22 104 19" stroke="#F6EFE4" stroke-width="1.5" stroke-linecap="round" opacity="0.9" />
+						</g>
+
+						<!-- Soft Silky Flared Cheek Wings (炸毛饭团蓬松腮帮) -->
+						<path
+							d="M72 18
+							   C90 18, 103 27, 108 39
+							   Q119 43 122 48
+							   Q117 51 124 57
+							   Q118 62 112 65
+							   C103 73, 89 77, 72 77
+							   C55 77, 41 73, 32 65
+							   Q26 62 20 57
+							   Q27 51 22 48
+							   Q25 43 36 39
+							   C41 27, 54 18, 72 18 Z"
+							fill="url(#pidan-head-grad)"
+							stroke="#D6C5AE"
+							stroke-width="1.1"
+							stroke-linejoin="round"
+						/>
+
+						<!-- Soft crown fluff -->
+						<path d="M66 19 Q69 14 72 18 Q75 14 78 19" stroke="#DFD0BA" stroke-width="1.8" stroke-linecap="round" fill="none" />
+
+						<!-- Smoky Seal Forehead Bridge (还原真猫额头过渡色) -->
+						<ellipse cx="72" cy="34" rx="24" ry="15" fill="url(#pidan-brow-grad)" />
+
+						<!-- Feathered Dark Seal-Point Mask (挖煤小黑脸) -->
+						<ellipse cx="72" cy="51" rx="31" ry="24.5" fill="url(#pidan-mask-grad)" />
+
+						<!-- Signature Long White Eyebrow Whiskers (像真猫一样的白色眉须) -->
+						<g stroke="#FFFFFF" stroke-width="1.05" stroke-linecap="round" opacity="0.72">
+							<path d="M54 37 Q44 27 33 27" />
+							<path d="M57 36 Q49 25 40 23" />
+							<path d="M90 37 Q100 27 111 27" />
+							<path d="M87 36 Q95 25 104 23" />
+						</g>
+
+						<!-- Rosy Cheek Blush (visible when happy/petted/fed) -->
+						<g class="pidan-blush">
+							<ellipse cx="47" cy="58" rx="5.5" ry="3" fill="#F48B9E" opacity="0.55" />
+							<ellipse cx="97" cy="58" rx="5.5" ry="3" fill="#F48B9E" opacity="0.55" />
+						</g>
+
+						<!-- Open Sapphire-Blue Boba Eyes (tracks cursor!) -->
+						<g class="pidan-eyes-open">
+							<!-- Left Eye -->
+							<circle cx="58.5" cy="49.5" r="8.4" fill="#120C0A" />
+							<circle cx="58.5" cy="49.5" r="7.6" fill="url(#pidan-iris-grad)" />
+							<!-- Right Eye -->
+							<circle cx="85.5" cy="49.5" r="8.4" fill="#120C0A" />
+							<circle cx="85.5" cy="49.5" r="7.6" fill="url(#pidan-iris-grad)" />
+
+							<!-- Pointer-Tracking Pupils + Sparkle Catchlights -->
+							<g class="pidan-gaze">
+								<ellipse class="pidan-pupil" cx="58.5" cy="49.8" rx="4.3" ry="5.1" fill="#120D0C" />
+								<circle cx="55.8" cy="46.8" r="2.2" fill="#FFFFFF" />
+								<circle cx="61.2" cy="52.2" r="1.05" fill="#FFFFFF" opacity="0.88" />
+
+								<ellipse class="pidan-pupil" cx="85.5" cy="49.8" rx="4.3" ry="5.1" fill="#120D0C" />
+								<circle cx="82.8" cy="46.8" r="2.2" fill="#FFFFFF" />
+								<circle cx="88.2" cy="52.2" r="1.05" fill="#FFFFFF" opacity="0.88" />
+							</g>
+
+							<!-- Natural Blink Eyelids -->
+							<ellipse class="pidan-eyelid" cx="58.5" cy="49.5" rx="8.6" ry="8.6" fill="#2A1D17" />
+							<ellipse class="pidan-eyelid" cx="85.5" cy="49.5" rx="8.6" ry="8.6" fill="#2A1D17" />
+						</g>
+
+						<!-- Happy Crescent Eyes (^ ^) -->
+						<g class="pidan-eyes-happy">
+							<path d="M51 51 Q58.5 43 66 51" stroke="#A7DCFF" stroke-width="2.8" stroke-linecap="round" fill="none" />
+							<path d="M78 51 Q85.5 43 93 51" stroke="#A7DCFF" stroke-width="2.8" stroke-linecap="round" fill="none" />
+						</g>
+
+						<!-- Sleeping Peaceful Eyes (︶ ︶) -->
+						<g class="pidan-eyes-sleep">
+							<path d="M51.5 50 Q58.5 55.5 65.5 50" stroke="#C8B5A2" stroke-width="2.3" stroke-linecap="round" fill="none" />
+							<path d="M78.5 50 Q85.5 55.5 92.5 50" stroke="#C8B5A2" stroke-width="2.3" stroke-linecap="round" fill="none" />
+						</g>
+
+						<!-- Dark Velvet Nose + Cute ω Muzzle -->
+						<path d="M69.2 56.2 Q72 54.8 74.8 56.2 L72 59.5 Z" fill="#110C0B" />
+						<ellipse cx="72" cy="56.3" rx="1.4" ry="0.6" fill="#6F584E" opacity="0.7" />
+						<path
+							class="pidan-mouth-calm"
+							d="M66.8 61.5 Q69.5 63.8 72 61.2 Q74.5 63.8 77.2 61.5"
+							stroke="#8F7566"
+							stroke-width="1.5"
+							stroke-linecap="round"
+							fill="none"
+						/>
+						<!-- Open munching / surprised mouth -->
+						<ellipse class="pidan-mouth-open" cx="72" cy="63" rx="3.2" ry="2.8" fill="#D96B7E" />
+
+						<!-- Long Crisp White Whiskers (雪白长胡须) -->
+						<g class="pidan-whiskers pidan-whiskers-l" stroke="#FFFFFF" stroke-width="1.25" stroke-linecap="round" opacity="0.92">
+							<path d="M53 56 Q36 53 21 55" />
+							<path d="M54 59.5 Q37 59.5 20 62.5" />
+							<path d="M55 62.5 Q40 65 26 69" />
+						</g>
+						<g class="pidan-whiskers pidan-whiskers-r" stroke="#FFFFFF" stroke-width="1.25" stroke-linecap="round" opacity="0.92">
+							<path d="M91 56 Q108 53 123 55" />
+							<path d="M90 59.5 Q107 59.5 124 62.5" />
+							<path d="M89 62.5 Q104 65 118 69" />
+						</g>
+					</g>
+				</g>
+			</svg>
+		</button>
+	</div>
+
+	<!-- 3. Stationary Real Pidan Polaroid Card Mode (Zero stiff raw-photo movement!) -->
+	<aside
+		class="pidan-real-card"
+		data-pidan-real-card
+		aria-label="皮蛋真猫萌照卡"
+		hidden
+	>
+		<div class="pidan-real-header">
+			<div class="pidan-real-brand">
+				<span class="pidan-real-dot" aria-hidden="true"></span>
+				<span class="pidan-real-title">皮蛋 · 真猫本尊</span>
+				<span class="pidan-real-counter" data-pidan-card-index>1 / 12</span>
+			</div>
+			<div class="pidan-real-header-actions">
+				<button type="button" class="pidan-mode-chip" data-pidan-to-chibi title="切回 Q 版动态皮蛋">
+					<span aria-hidden="true">🐾</span>
+					<span>Q版动态</span>
+				</button>
+				<button type="button" class="pidan-icon-close" data-pidan-minimize title="收起卡片" aria-label="收起真猫卡片">
+					—
+				</button>
+			</div>
+		</div>
+
+		<div class="pidan-polaroid-frame">
+			<button type="button" class="pidan-photo-zoom" data-pidan-open-lightbox aria-label="点击放大查看皮蛋高清萌照">
+				<img
+					data-pidan-real-img
+					src={cardsPayload[0].src}
+					alt={`皮蛋：${cardsPayload[0].title}`}
+					width="360"
+					height="360"
+					loading="lazy"
+					decoding="async"
+				/>
+				<span class="pidan-photo-badge" data-pidan-card-badge>{cardsPayload[0].badge}</span>
+				<span class="pidan-zoom-hint" aria-hidden="true">放大 ↗</span>
+			</button>
+		</div>
+
+		<div class="pidan-real-meta">
+			<h3 class="pidan-card-heading" data-pidan-card-title>{cardsPayload[0].title}</h3>
+			<p class="pidan-card-quote" data-pidan-card-quote>「{cardsPayload[0].quote}」</p>
+			<p class="pidan-card-caption" data-pidan-card-caption>{cardsPayload[0].caption}</p>
+		</div>
+
+		<div class="pidan-real-footer">
+			<button type="button" class="pidan-nav-btn" data-pidan-prev aria-label="上一张萌照">‹ 上一张</button>
+			<button type="button" class="pidan-nav-btn pidan-nav-btn-random" data-pidan-random>🎲 随机吸猫</button>
+			<button type="button" class="pidan-nav-btn" data-pidan-next aria-label="下一张萌照">下一张 ›</button>
+		</div>
+	</aside>
+
+	<!-- 4. Fullscreen Lightbox for Real Pidan Photos -->
+	<div class="pidan-lightbox" data-pidan-lightbox role="dialog" aria-modal="true" aria-label="皮蛋高清相册预览" hidden>
+		<div class="pidan-lightbox-backdrop" data-pidan-close-lightbox></div>
+		<div class="pidan-lightbox-panel">
+			<button type="button" class="pidan-lightbox-close" data-pidan-close-lightbox aria-label="关闭预览">✕</button>
+			<img data-pidan-lightbox-img src={cardsPayload[0].src} alt={cardsPayload[0].title} />
+			<div class="pidan-lightbox-bar">
+				<div>
+					<p class="pidan-lightbox-title" data-pidan-lightbox-title>{cardsPayload[0].title}</p>
+					<p class="pidan-lightbox-sub" data-pidan-lightbox-caption>{cardsPayload[0].caption}</p>
+				</div>
+				<div class="pidan-lightbox-controls">
+					<button type="button" class="pidan-nav-btn" data-pidan-prev>‹</button>
+					<button type="button" class="pidan-nav-btn" data-pidan-next>›</button>
+				</div>
+			</div>
+		</div>
+	</div>
 </div>
 
-<script is:inline>
+<script
+	is:inline
+	define:vars={{
+		cardsPayload,
+		dialogues: PIDAN_DIALOGUES,
+	}}
+>
 	(() => {
-		const initPet = () => {
-			const pet = document.querySelector('[data-reading-pet]');
-			if (!pet) return;
+		const STORAGE_KEY = 'alexblog_pidan_v1';
+
+		const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+		const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+		const readSavedState = () => {
+			try {
+				const raw = localStorage.getItem(STORAGE_KEY);
+				if (!raw) return {};
+				const parsed = JSON.parse(raw);
+				return parsed && typeof parsed === 'object' ? parsed : {};
+			} catch {
+				return {};
+			}
+		};
+
+		const writeSavedState = (state) => {
+			try {
+				localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+			} catch {}
+		};
+
+		const bootPidan = () => {
+			const root = document.querySelector('[data-pidan-root]');
+			if (!root) return;
+
+			// If persisted via Astro ClientRouter, refresh page-context hooks without re-binding listeners
+			if (root.dataset.initialized === 'true') {
+				window.__pidanController?.onRouteChange();
+				return;
+			}
+			root.dataset.initialized = 'true';
 
 			const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+			const saved = readSavedState();
 
-			const update = () => {
-				const scrollTop = window.scrollY;
-				const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-				const progress = docHeight > 0 ? Math.min(scrollTop / docHeight, 1) : 0;
+			const stage = root.querySelector('[data-pidan-stage]');
+			const hitBtn = root.querySelector('[data-pidan-hit]');
+			const bubble = root.querySelector('[data-pidan-bubble]');
+			const bubbleText = root.querySelector('[data-pidan-bubble-text]');
+			const fxLayer = root.querySelector('[data-pidan-fx]');
+			const restoreBtn = root.querySelector('[data-pidan-restore]');
+			const nestLabel = root.querySelector('[data-pidan-nest-label]');
+			const feedBtn = root.querySelector('[data-pidan-feed]');
+			const fishCountEl = root.querySelector('[data-pidan-fish-count]');
+			const collarBtn = root.querySelector('[data-pidan-collar]');
+			const toRealBtn = root.querySelector('[data-pidan-to-real]');
+			const toChibiBtn = root.querySelector('[data-pidan-to-chibi]');
+			const minimizeBtns = root.querySelectorAll('[data-pidan-minimize]');
+			const progressChip = root.querySelector('[data-pidan-progress]');
 
-				// Show pet after scrolling 10%
-				if (progress > 0.1) {
-					pet.style.opacity = '1';
-					// Move pet along Y axis based on scroll progress
-					const maxMove = window.innerHeight - 120;
-					const yPos = maxMove * (1 - progress);
-					pet.style.transform = `translateY(${yPos}px)`;
-					if (!reducedMotion) {
-						// Add subtle bounce
-						const bounce = Math.sin(progress * Math.PI * 8) * 3;
-						pet.style.transform = `translateY(${yPos + bounce}px)`;
-					}
-				} else {
-					pet.style.opacity = '0';
-				}
+			const realCard = root.querySelector('[data-pidan-real-card]');
+			const realImg = root.querySelector('[data-pidan-real-img]');
+			const cardIndexEl = root.querySelector('[data-pidan-card-index]');
+			const cardBadgeEl = root.querySelector('[data-pidan-card-badge]');
+			const cardTitleEl = root.querySelector('[data-pidan-card-title]');
+			const cardQuoteEl = root.querySelector('[data-pidan-card-quote]');
+			const cardCaptionEl = root.querySelector('[data-pidan-card-caption]');
+			const prevBtns = root.querySelectorAll('[data-pidan-prev]');
+			const nextBtns = root.querySelectorAll('[data-pidan-next]');
+			const randomBtn = root.querySelector('[data-pidan-random]');
+			const openLightboxBtn = root.querySelector('[data-pidan-open-lightbox]');
+			const lightbox = root.querySelector('[data-pidan-lightbox]');
+			const lightboxImg = root.querySelector('[data-pidan-lightbox-img]');
+			const lightboxTitle = root.querySelector('[data-pidan-lightbox-title]');
+			const lightboxCaption = root.querySelector('[data-pidan-lightbox-caption]');
+			const closeLightboxBtns = root.querySelectorAll('[data-pidan-close-lightbox]');
+
+			const getBounds = () => {
+				const vw = window.innerWidth || 360;
+				const spriteW = vw < 640 ? 82 : 98;
+				// Leave room on the right for .back-to-top button
+				const rightReserve = vw < 640 ? 78 : 112;
+				const minX = 14;
+				const maxX = Math.max(minX + 12, vw - spriteW - rightReserve);
+				return { minX, maxX, spriteW, vw };
 			};
 
-			let ticking = false;
-			const onScroll = () => {
-				if (ticking) return;
-				ticking = true;
-				requestAnimationFrame(() => {
-					update();
-					ticking = false;
+			const initialBounds = getBounds();
+			const state = {
+				mode: saved.mode === 'real' ? 'real' : 'chibi',
+				minimized: Boolean(saved.minimized),
+				collar: Boolean(saved.collar),
+				photoIndex: Number.isInteger(saved.photoIndex)
+					? clamp(saved.photoIndex, 0, cardsPayload.length - 1)
+					: 0,
+				fishFed: Number.isFinite(saved.fishFed) && saved.fishFed > 0 ? Math.floor(saved.fishFed) : 0,
+				x: typeof saved.xRatio === 'number'
+					? clamp(saved.xRatio * (initialBounds.vw || 1000), initialBounds.minX, initialBounds.maxX)
+					: 28,
+				targetX: 28,
+				facing: 'right',
+				pose: 'idle', // idle | walk | trot | happy | eat | sleep | surprised | drag
+				dragging: false,
+				dragMoved: false,
+				dragOffsetX: 0,
+				dragOffsetY: 0,
+				liftY: 0,
+				petCombo: 0,
+				lastPetAt: 0,
+				lastInteractionAt: Date.now(),
+				lastFastScrollAt: 0,
+				lockedUntil: 0,
+				currentPath: window.location.pathname,
+				milestonesHit: new Set(),
+			};
+			state.targetX = state.x;
+
+			const persist = () => {
+				const { vw } = getBounds();
+				writeSavedState({
+					mode: state.mode,
+					minimized: state.minimized,
+					collar: state.collar,
+					photoIndex: state.photoIndex,
+					fishFed: state.fishFed,
+					xRatio: vw > 0 ? Number((state.x / vw).toFixed(4)) : 0.04,
 				});
 			};
 
-			window.addEventListener('scroll', onScroll, { passive: true });
-			update();
-
-			const cleanup = () => {
-				window.removeEventListener('scroll', onScroll);
+			let bubbleTimer = 0;
+			const say = (text, duration = 3400) => {
+				if (!bubble || !bubbleText || state.minimized || state.mode !== 'chibi') return;
+				bubbleText.textContent = text;
+				bubble.hidden = false;
+				// Prevent clipping near screen edges
+				const { vw } = getBounds();
+				if (state.x < 96) {
+					bubble.dataset.align = 'left';
+				} else if (state.x > vw - 220) {
+					bubble.dataset.align = 'right';
+				} else {
+					bubble.dataset.align = 'center';
+				}
+				clearTimeout(bubbleTimer);
+				bubbleTimer = window.setTimeout(() => {
+					bubble.hidden = true;
+				}, duration);
 			};
-			document.addEventListener('astro:before-swap', cleanup);
+
+			const spawnParticle = (symbol, kind = 'heart') => {
+				if (!fxLayer || reducedMotion) return;
+				const el = document.createElement('span');
+				el.className = `pidan-particle pidan-particle-${kind}`;
+				el.textContent = symbol;
+				const jitter = (Math.random() - 0.5) * 34;
+				el.style.setProperty('--px', `${jitter.toFixed(1)}px`);
+				fxLayer.appendChild(el);
+				window.setTimeout(() => el.remove(), 1250);
+			};
+
+			const setPose = (pose, lockMs = 0) => {
+				state.pose = pose;
+				root.dataset.state = pose;
+				if (lockMs > 0) {
+					state.lockedUntil = Date.now() + lockMs;
+				}
+			};
+
+			const syncPosition = () => {
+				if (!stage) return;
+				stage.style.transform = `translate3d(${state.x.toFixed(1)}px, ${state.liftY.toFixed(1)}px, 0)`;
+				root.dataset.facing = state.facing;
+			};
+
+			const renderFishCount = () => {
+				if (!fishCountEl) return;
+				if (state.fishFed > 0) {
+					fishCountEl.textContent = String(state.fishFed);
+					fishCountEl.hidden = false;
+				} else {
+					fishCountEl.hidden = true;
+				}
+			};
+
+			const renderCard = (animate = false) => {
+				const card = cardsPayload[state.photoIndex] || cardsPayload[0];
+				if (!card) return;
+				if (realImg) {
+					if (animate && !reducedMotion) {
+						realImg.classList.add('is-switching');
+						window.setTimeout(() => {
+							realImg.src = card.src;
+							realImg.alt = `皮蛋：${card.title}`;
+							realImg.classList.remove('is-switching');
+						}, 120);
+					} else {
+						realImg.src = card.src;
+						realImg.alt = `皮蛋：${card.title}`;
+					}
+				}
+				if (cardIndexEl) cardIndexEl.textContent = `${state.photoIndex + 1} / ${cardsPayload.length}`;
+				if (cardBadgeEl) cardBadgeEl.textContent = card.badge;
+				if (cardTitleEl) cardTitleEl.textContent = card.title;
+				if (cardQuoteEl) cardQuoteEl.textContent = `「${card.quote}」`;
+				if (cardCaptionEl) cardCaptionEl.textContent = card.caption;
+				if (lightboxImg) {
+					lightboxImg.src = card.src;
+					lightboxImg.alt = card.title;
+				}
+				if (lightboxTitle) lightboxTitle.textContent = `${card.title} · ${card.badge}`;
+				if (lightboxCaption) lightboxCaption.textContent = card.caption;
+			};
+
+			const syncVisibility = () => {
+				root.dataset.mode = state.mode;
+				root.dataset.minimized = String(state.minimized);
+				root.dataset.collar = String(state.collar);
+				collarBtn?.classList.toggle('is-active', state.collar);
+
+				if (state.minimized) {
+					if (stage) stage.hidden = true;
+					if (realCard) realCard.hidden = true;
+					if (restoreBtn) {
+						restoreBtn.hidden = false;
+						if (nestLabel) {
+							nestLabel.textContent = state.mode === 'real' ? '皮蛋萌照' : '唤醒皮蛋';
+						}
+					}
+					return;
+				}
+
+				if (restoreBtn) restoreBtn.hidden = true;
+				if (state.mode === 'real') {
+					if (stage) stage.hidden = true;
+					if (realCard) realCard.hidden = false;
+					renderCard(false);
+				} else {
+					if (realCard) realCard.hidden = true;
+					if (stage) stage.hidden = false;
+					syncPosition();
+				}
+			};
+
+			// --- Eye Gaze Tracking ---
+			let eyeRaf = 0;
+			let pointerX = 0;
+			let pointerY = 0;
+			const applyEyeGaze = () => {
+				eyeRaf = 0;
+				if (state.minimized || state.mode !== 'chibi' || !hitBtn) return;
+				const rect = hitBtn.getBoundingClientRect();
+				const cx = rect.left + rect.width * 0.52;
+				const cy = rect.top + rect.height * 0.42;
+				const dx = pointerX - cx;
+				const dy = pointerY - cy;
+				const dist = Math.hypot(dx, dy) || 1;
+				const maxShift = 2.5;
+				const factor = Math.min(dist / 140, 1) * maxShift;
+				// Flip horizontal eye delta when sprite is mirrored facing left
+				const dirSign = state.facing === 'left' ? -1 : 1;
+				const ex = ((dx / dist) * factor * dirSign).toFixed(2);
+				const ey = ((dy / dist) * factor).toFixed(2);
+				root.style.setProperty('--eye-x', `${ex}px`);
+				root.style.setProperty('--eye-y', `${ey}px`);
+			};
+
+			window.addEventListener(
+				'pointermove',
+				(e) => {
+					pointerX = e.clientX;
+					pointerY = e.clientY;
+					if (!eyeRaf && !reducedMotion) {
+						eyeRaf = requestAnimationFrame(applyEyeGaze);
+					}
+				},
+				{ passive: true }
+			);
+
+			// --- Drag & Pet Interactions on Chibi Pidan ---
+			hitBtn?.addEventListener('pointerdown', (e) => {
+				if (e.button !== 0 && e.pointerType === 'mouse') return;
+				state.lastInteractionAt = Date.now();
+				state.dragging = true;
+				state.dragMoved = false;
+				state.dragOffsetX = e.clientX - state.x;
+				state.dragOffsetY = e.clientY;
+				hitBtn.setPointerCapture?.(e.pointerId);
+			});
+
+			hitBtn?.addEventListener('pointermove', (e) => {
+				if (!state.dragging) return;
+				const movedX = Math.abs(e.clientX - state.dragOffsetX - state.x);
+				const movedY = Math.abs(e.clientY - state.dragOffsetY);
+				if (!state.dragMoved && movedX + movedY > 7) {
+					state.dragMoved = true;
+					setPose('drag', 600);
+					say(pick(dialogues.drag), 2600);
+				}
+				if (state.dragMoved) {
+					const { minX, maxX } = getBounds();
+					const nextX = clamp(e.clientX - state.dragOffsetX, minX, maxX);
+					if (Math.abs(nextX - state.x) > 1.2) {
+						state.facing = nextX >= state.x ? 'right' : 'left';
+					}
+					state.x = nextX;
+					state.targetX = nextX;
+					state.liftY = clamp(e.clientY - state.dragOffsetY, -72, 4);
+					syncPosition();
+				}
+			});
+
+			const finishPointer = (e) => {
+				if (!state.dragging) return;
+				state.dragging = false;
+				try {
+					hitBtn?.releasePointerCapture?.(e.pointerId);
+				} catch {}
+
+				if (state.dragMoved) {
+					state.liftY = 0;
+					syncPosition();
+					setPose('happy', 1100);
+					say(pick(dialogues.drop), 2400);
+					persist();
+					return;
+				}
+
+				// Click = Pet Pidan!
+				const now = Date.now();
+				if (state.pose === 'sleep') {
+					setPose('happy', 1600);
+					spawnParticle('♥', 'heart');
+					say(pick(dialogues.wake), 3000);
+					state.lastPetAt = now;
+					return;
+				}
+
+				state.petCombo = now - state.lastPetAt < 1800 ? state.petCombo + 1 : 1;
+				state.lastPetAt = now;
+				setPose('happy', 1700);
+
+				if (state.petCombo >= 3) {
+					spawnParticle('♥', 'heart');
+					spawnParticle('✨', 'sparkle');
+					say(pick(dialogues.petCombo), 3400);
+				} else {
+					spawnParticle('♥', 'heart');
+					say(pick(dialogues.pet), 3000);
+				}
+			};
+
+			hitBtn?.addEventListener('pointerup', finishPointer);
+			hitBtn?.addEventListener('pointercancel', finishPointer);
+
+			// --- Toolbar Actions ---
+			feedBtn?.addEventListener('click', (e) => {
+				e.stopPropagation();
+				state.lastInteractionAt = Date.now();
+				state.fishFed += 1;
+				renderFishCount();
+				persist();
+				setPose('eat', 2000);
+				spawnParticle('🐟', 'fish');
+				window.setTimeout(() => {
+					spawnParticle('♥', 'heart');
+					spawnParticle('✨', 'sparkle');
+				}, 260);
+				say(pick(dialogues.feed), 3400);
+			});
+
+			collarBtn?.addEventListener('click', (e) => {
+				e.stopPropagation();
+				state.lastInteractionAt = Date.now();
+				state.collar = !state.collar;
+				syncVisibility();
+				persist();
+				setPose('happy', 1500);
+				say(
+					state.collar
+						? '套上小鱼甜甜圈皮肤啦！是不是和照片里一模一样？🍩'
+						: '摘掉小鱼圈，露出皮蛋骄傲的纯白大围脖！✨',
+					3400
+				);
+			});
+
+			toRealBtn?.addEventListener('click', (e) => {
+				e.stopPropagation();
+				state.mode = 'real';
+				state.minimized = false;
+				syncVisibility();
+				persist();
+			});
+
+			toChibiBtn?.addEventListener('click', (e) => {
+				e.stopPropagation();
+				state.mode = 'chibi';
+				state.minimized = false;
+				state.lastInteractionAt = Date.now();
+				syncVisibility();
+				setPose('happy', 1500);
+				say(dialogues.toChibi, 3200);
+				persist();
+			});
+
+			minimizeBtns.forEach((btn) => {
+				btn.addEventListener('click', (e) => {
+					e.stopPropagation();
+					state.minimized = true;
+					syncVisibility();
+					persist();
+				});
+			});
+
+			restoreBtn?.addEventListener('click', () => {
+				state.minimized = false;
+				state.lastInteractionAt = Date.now();
+				syncVisibility();
+				if (state.mode === 'chibi') {
+					setPose('happy', 1400);
+					say(pick(dialogues.greet), 3200);
+				}
+				persist();
+			});
+
+			// --- Real Pidan Photo Card Navigation & Lightbox ---
+			const stepPhoto = (delta) => {
+				const total = cardsPayload.length;
+				state.photoIndex = (state.photoIndex + delta + total) % total;
+				renderCard(true);
+				persist();
+			};
+
+			prevBtns.forEach((btn) => btn.addEventListener('click', () => stepPhoto(-1)));
+			nextBtns.forEach((btn) => btn.addEventListener('click', () => stepPhoto(1)));
+			randomBtn?.addEventListener('click', () => {
+				if (cardsPayload.length <= 1) return;
+				let next = state.photoIndex;
+				while (next === state.photoIndex) {
+					next = Math.floor(Math.random() * cardsPayload.length);
+				}
+				state.photoIndex = next;
+				renderCard(true);
+				persist();
+			});
+
+			const openLightbox = () => {
+				if (!lightbox) return;
+				renderCard(false);
+				lightbox.hidden = false;
+			};
+			const closeLightbox = () => {
+				if (!lightbox) return;
+				lightbox.hidden = true;
+			};
+
+			openLightboxBtn?.addEventListener('click', openLightbox);
+			closeLightboxBtns.forEach((btn) => btn.addEventListener('click', closeLightbox));
+			window.addEventListener('keydown', (e) => {
+				if (!lightbox || lightbox.hidden) return;
+				if (e.key === 'Escape') closeLightbox();
+				if (e.key === 'ArrowLeft') stepPhoto(-1);
+				if (e.key === 'ArrowRight') stepPhoto(1);
+			});
+
+			// --- Scroll Velocity & Article Reading Progress Linkage ---
+			let lastScrollY = window.scrollY;
+			let lastScrollTs = performance.now();
+			let scrollTick = false;
+
+			const updateReadingAndScroll = () => {
+				scrollTick = false;
+				const nowTs = performance.now();
+				const sy = window.scrollY;
+				const dt = Math.max(16, nowTs - lastScrollTs);
+				const velocity = Math.abs(sy - lastScrollY) / dt; // px per ms
+				lastScrollY = sy;
+				lastScrollTs = nowTs;
+
+				// Fast scroll reaction in Chibi mode
+				if (
+					!reducedMotion &&
+					state.mode === 'chibi' &&
+					!state.minimized &&
+					!state.dragging &&
+					velocity > 2.6 &&
+					Date.now() - state.lastFastScrollAt > 12000
+				) {
+					state.lastFastScrollAt = Date.now();
+					state.lastInteractionAt = Date.now();
+					setPose('surprised', 1700);
+					say(pick(dialogues.fastScroll), 2800);
+				}
+
+				// Check if current page has a blog post article
+				const article = document.querySelector('[data-blog-article]');
+				if (!article) {
+					if (progressChip) progressChip.hidden = true;
+					return;
+				}
+
+				const rect = article.getBoundingClientRect();
+				const articleTop = sy + rect.top;
+				const scrollable = Math.max(1, article.offsetHeight - window.innerHeight * 0.55);
+				const ratio = clamp((sy - articleTop + window.innerHeight * 0.35) / scrollable, 0, 1);
+				const pct = Math.round(ratio * 100);
+
+				if (progressChip) {
+					progressChip.hidden = false;
+					progressChip.textContent = `陪读 ${pct}%`;
+				}
+
+				if (state.mode !== 'chibi' || state.minimized || sy < 80) return;
+
+				if (pct >= 25 && pct < 48 && !state.milestonesHit.has(25)) {
+					state.milestonesHit.add(25);
+					say(dialogues.milestone25, 3400);
+				} else if (pct >= 50 && pct < 80 && !state.milestonesHit.has(50)) {
+					state.milestonesHit.add(50);
+					setPose('happy', 1500);
+					say(dialogues.milestone50, 3400);
+				} else if (pct >= 85 && pct < 98 && !state.milestonesHit.has(85)) {
+					state.milestonesHit.add(85);
+					say(dialogues.milestone85, 3400);
+				} else if (pct >= 99 && !state.milestonesHit.has(100)) {
+					state.milestonesHit.add(100);
+					setPose('happy', 2400);
+					spawnParticle('✨', 'sparkle');
+					spawnParticle('♥', 'heart');
+					say(dialogues.milestone100, 4200);
+				}
+			};
+
+			window.addEventListener(
+				'scroll',
+				() => {
+					if (!scrollTick) {
+						scrollTick = true;
+						requestAnimationFrame(updateReadingAndScroll);
+					}
+				},
+				{ passive: true }
+			);
+
+			window.addEventListener(
+				'resize',
+				() => {
+					const { minX, maxX } = getBounds();
+					state.x = clamp(state.x, minX, maxX);
+					state.targetX = clamp(state.targetX, minX, maxX);
+					syncPosition();
+				},
+				{ passive: true }
+			);
+
+			// --- Autonomous Chibi Behavior Loop (Walk / Idle / Sleep) ---
+			let lastFrame = performance.now();
+			const stepMovement = (now) => {
+				const dt = Math.min(0.05, (now - lastFrame) / 1000);
+				lastFrame = now;
+
+				if (!reducedMotion && state.mode === 'chibi' && !state.minimized && !state.dragging) {
+					const nowMs = Date.now();
+					if (state.pose === 'walk') {
+						const diff = state.targetX - state.x;
+						if (Math.abs(diff) <= 2) {
+							state.x = state.targetX;
+							setPose('idle');
+							persist();
+						} else {
+							const speed = 44; // gentle stroll px/s
+							state.facing = diff > 0 ? 'right' : 'left';
+							state.x += Math.sign(diff) * Math.min(Math.abs(diff), speed * dt);
+							syncPosition();
+						}
+					} else if (nowMs > state.lockedUntil && state.pose !== 'idle' && state.pose !== 'sleep') {
+						setPose('idle');
+					}
+				}
+				requestAnimationFrame(stepMovement);
+			};
+			if (!reducedMotion) {
+				requestAnimationFrame(stepMovement);
+			}
+
+			// Autonomous decision timer every ~4.8s
+			window.setInterval(() => {
+				if (document.hidden || reducedMotion) return;
+				if (state.mode !== 'chibi' || state.minimized || state.dragging) return;
+				const now = Date.now();
+				if (now < state.lockedUntil) return;
+
+				// Nap peacefully after 26s of quiet time
+				if (now - state.lastInteractionAt > 26000) {
+					if (state.pose !== 'sleep') {
+						setPose('sleep');
+						say(pick(dialogues.sleep), 3200);
+					} else if (Math.random() < 0.55) {
+						spawnParticle('Zzz', 'zzz');
+					}
+					return;
+				}
+
+				if (state.pose === 'walk') return;
+
+				const roll = Math.random();
+				if (roll < 0.46) {
+					// Stroll to a nearby cozy spot along the bottom rail
+					const { minX, maxX } = getBounds();
+					const span = Math.min(220, (maxX - minX) * 0.55);
+					const candidate = clamp(state.x + (Math.random() - 0.48) * span * 2, minX, maxX);
+					if (Math.abs(candidate - state.x) > 28) {
+						state.targetX = candidate;
+						state.facing = candidate > state.x ? 'right' : 'left';
+						setPose('walk');
+					}
+				} else if (roll < 0.62) {
+					// Brief happy ear wiggle
+					setPose('idle', 1200);
+				}
+			}, 4800);
+
+			const onRouteChange = () => {
+				if (window.location.pathname !== state.currentPath) {
+					state.currentPath = window.location.pathname;
+					state.milestonesHit.clear();
+				}
+				updateReadingAndScroll();
+			};
+
+			window.__pidanController = { onRouteChange };
+
+			// Initial render
+			renderFishCount();
+			syncVisibility();
+			updateReadingAndScroll();
+
+			// Gentle first-visit greeting once per tab session
+			try {
+				if (!sessionStorage.getItem('pidan_greeted') && state.mode === 'chibi' && !state.minimized) {
+					sessionStorage.setItem('pidan_greeted', '1');
+					window.setTimeout(() => say(pick(dialogues.greet), 3800), 900);
+				}
+			} catch {}
 		};
 
-		window.__readingPetInit = initPet;
-		if (!window.__readingPetBound) {
-			window.__readingPetBound = true;
-			document.addEventListener('astro:page-load', () => {
-				requestAnimationFrame(() => window.__readingPetInit?.());
-			});
+		if (document.readyState === 'loading') {
+			document.addEventListener('DOMContentLoaded', bootPidan, { once: true });
+		} else {
+			bootPidan();
 		}
-		initPet();
+		document.addEventListener('astro:page-load', bootPidan);
 	})();
 </script>
 
 <style>
-	.reading-pet {
-		transition: opacity 0.5s ease, transform 0.1s ease-out;
+	.pidan-root {
+		position: fixed;
+		inset: 0;
+		z-index: 56;
+		pointer-events: none;
+		user-select: none;
+		-webkit-user-select: none;
 	}
-	.reading-pet img {
-		animation: pet-idle 2s ease-in-out infinite;
+
+	.pidan-root [hidden] {
+		display: none !important;
 	}
-	@keyframes pet-idle {
+
+	/* --- 1. Minimized Corner Nest Pill --- */
+	.pidan-nest-pill {
+		position: fixed;
+		left: clamp(0.85rem, 2.2vw, 1.4rem);
+		bottom: clamp(0.9rem, 2.6vh, 1.4rem);
+		pointer-events: auto;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.42rem;
+		padding: 0.42rem 0.78rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(228, 228, 231, 0.92);
+		background: rgba(255, 255, 255, 0.88);
+		color: rgb(63 63 70);
+		font-size: 0.76rem;
+		font-weight: 500;
+		box-shadow: 0 10px 28px rgba(15, 23, 42, 0.1);
+		backdrop-filter: blur(12px);
+		transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+	}
+
+	.pidan-nest-pill:hover {
+		transform: translateY(-2px);
+		border-color: rgba(180, 126, 36, 0.45);
+		box-shadow: 0 14px 32px rgba(15, 23, 42, 0.15);
+	}
+
+	:global(html.dark) .pidan-nest-pill {
+		border-color: rgba(63, 63, 70, 0.9);
+		background: rgba(24, 24, 27, 0.86);
+		color: rgb(228 228 231);
+		box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+	}
+
+	/* --- 2. Chibi Pidan Dynamic Stage --- */
+	.pidan-stage {
+		position: fixed;
+		left: 0;
+		bottom: 0.45rem;
+		width: 98px;
+		height: 92px;
+		pointer-events: auto;
+		will-change: transform;
+	}
+
+	@media (max-width: 639px) {
+		.pidan-stage {
+			width: 82px;
+			height: 78px;
+			bottom: 0.35rem;
+		}
+	}
+
+	.pidan-sprite-btn {
+		display: block;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		margin: 0;
+		border: 0;
+		background: transparent;
+		touch-action: none;
+		filter: drop-shadow(0 8px 16px rgba(15, 23, 42, 0.16));
+		transition: filter 200ms ease;
+	}
+
+	:global(html.dark) .pidan-sprite-btn {
+		filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.46));
+	}
+
+	.pidan-sprite-btn:hover {
+		filter: drop-shadow(0 11px 20px rgba(180, 126, 36, 0.24));
+	}
+
+	.pidan-svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	/* Horizontal flip around SVG center */
+	.pidan-body-flip {
+		transform-origin: 72px 66px;
+		transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.pidan-root[data-facing='left'] .pidan-body-flip {
+		transform: scaleX(-1);
+	}
+
+	/* Collar visibility */
+	.pidan-donut-collar {
+		opacity: 0;
+		transform: scale(0.92);
+		transform-origin: 72px 75px;
+		transition: opacity 200ms ease, transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+	}
+
+	.pidan-root[data-collar='true'] .pidan-donut-collar {
+		opacity: 1;
+		transform: scale(1);
+	}
+
+	/* Eye & mouth expression switches */
+	.pidan-eyes-happy,
+	.pidan-eyes-sleep,
+	.pidan-blush,
+	.pidan-mouth-open {
+		opacity: 0;
+		transition: opacity 140ms ease;
+	}
+
+	.pidan-gaze {
+		transform: translate(var(--eye-x, 0px), var(--eye-y, 0px));
+		transition: transform 90ms ease-out;
+	}
+
+	.pidan-pupil {
+		transform-box: fill-box;
+		transform-origin: center;
+		transition: transform 180ms ease;
+	}
+
+	.pidan-sprite-btn:hover .pidan-pupil,
+	.pidan-root[data-state='surprised'] .pidan-pupil {
+		transform: scale(1.22);
+	}
+
+	/* Natural periodic blink */
+	.pidan-eyelid {
+		transform-box: fill-box;
+		transform-origin: top center;
+		transform: scaleY(0);
+		animation: pidan-blink 5.4s infinite;
+	}
+
+	@keyframes pidan-blink {
+		0%, 93%, 100% {
+			transform: scaleY(0);
+		}
+		95.5% {
+			transform: scaleY(1.05);
+		}
+	}
+
+	/* Tail, Head, Ears & Legs Rigging */
+	.pidan-tail {
+		transform-origin: 44px 94px;
+		animation: pidan-tail-idle 3.2s ease-in-out infinite;
+	}
+
+	.pidan-head {
+		transform-origin: 72px 62px;
+		animation: pidan-head-idle 4.2s ease-in-out infinite;
+	}
+
+	.pidan-torso {
+		transform-origin: 72px 104px;
+		animation: pidan-breathe 3.2s ease-in-out infinite;
+	}
+
+	.pidan-ear-l {
+		transform-origin: 48px 26px;
+		animation: pidan-ear-twitch 6.5s ease-in-out infinite;
+	}
+
+	.pidan-ear-r {
+		transform-origin: 96px 26px;
+	}
+
+	.pidan-leg {
+		transform-box: fill-box;
+		transform-origin: top center;
+		transition: opacity 180ms ease, transform 180ms ease;
+	}
+
+	/* --- Pose: Walk --- */
+	.pidan-root[data-state='walk'] .pidan-head {
+		animation: pidan-walk-bob 0.44s ease-in-out infinite;
+	}
+	.pidan-root[data-state='walk'] .pidan-torso {
+		animation: pidan-walk-bob 0.44s ease-in-out infinite;
+	}
+	.pidan-root[data-state='walk'] .pidan-leg-fl,
+	.pidan-root[data-state='walk'] .pidan-leg-br {
+		animation: pidan-step-a 0.44s ease-in-out infinite;
+	}
+	.pidan-root[data-state='walk'] .pidan-leg-fr,
+	.pidan-root[data-state='walk'] .pidan-leg-bl {
+		animation: pidan-step-b 0.44s ease-in-out infinite;
+	}
+	.pidan-root[data-state='walk'] .pidan-tail {
+		animation: pidan-tail-happy 0.8s ease-in-out infinite;
+	}
+
+	/* --- Pose: Happy / Petted / Fed --- */
+	.pidan-root[data-state='happy'] .pidan-eyes-open,
+	.pidan-root[data-state='eat'] .pidan-eyes-open {
+		opacity: 0;
+	}
+	.pidan-root[data-state='happy'] .pidan-eyes-happy,
+	.pidan-root[data-state='eat'] .pidan-eyes-happy,
+	.pidan-root[data-state='happy'] .pidan-blush,
+	.pidan-root[data-state='eat'] .pidan-blush {
+		opacity: 1;
+	}
+	.pidan-root[data-state='happy'] .pidan-head {
+		animation: pidan-purr-wiggle 0.48s ease-in-out infinite;
+	}
+	.pidan-root[data-state='happy'] .pidan-tail,
+	.pidan-root[data-state='eat'] .pidan-tail {
+		animation: pidan-tail-happy 0.42s ease-in-out infinite;
+	}
+	.pidan-root[data-state='eat'] .pidan-mouth-calm {
+		opacity: 0;
+	}
+	.pidan-root[data-state='eat'] .pidan-mouth-open {
+		opacity: 1;
+		animation: pidan-chomp 0.28s ease-in-out infinite;
+	}
+
+	/* --- Pose: Sleep (Loaf / 猫猫虫农民揣) --- */
+	.pidan-root[data-state='sleep'] .pidan-eyes-open {
+		opacity: 0;
+	}
+	.pidan-root[data-state='sleep'] .pidan-eyes-sleep {
+		opacity: 1;
+	}
+	.pidan-root[data-state='sleep'] .pidan-leg {
+		opacity: 0;
+		transform: translateY(-6px) scaleY(0.4);
+	}
+	.pidan-root[data-state='sleep'] .pidan-torso {
+		transform: translateY(7px) scale(1.05, 0.92);
+		animation: pidan-sleep-breathe 3.8s ease-in-out infinite;
+	}
+	.pidan-root[data-state='sleep'] .pidan-head {
+		transform: translateY(9px) rotate(-4deg);
+		animation: none;
+	}
+	.pidan-root[data-state='sleep'] .pidan-tail {
+		transform: rotate(-28deg) translate(10px, 8px);
+		animation: none;
+	}
+
+	/* --- Pose: Surprised / Fast Scroll (飞机耳炸毛) --- */
+	.pidan-root[data-state='surprised'] .pidan-ear-l {
+		transform: rotate(-24deg) translateY(3px);
+		animation: none;
+	}
+	.pidan-root[data-state='surprised'] .pidan-ear-r {
+		transform: rotate(24deg) translateY(3px);
+	}
+	.pidan-root[data-state='surprised'] .pidan-mouth-calm {
+		opacity: 0;
+	}
+	.pidan-root[data-state='surprised'] .pidan-mouth-open {
+		opacity: 1;
+	}
+	.pidan-root[data-state='surprised'] .pidan-tail {
+		transform: scale(1.18) rotate(14deg);
+	}
+
+	/* --- Pose: Dragged by Scruff (拎起后颈皮) --- */
+	.pidan-root[data-state='drag'] .pidan-shadow {
+		transform: scale(0.65);
+		transform-origin: 72px 123px;
+		opacity: 0.45;
+	}
+	.pidan-root[data-state='drag'] .pidan-ear-l {
+		transform: rotate(-16deg);
+	}
+	.pidan-root[data-state='drag'] .pidan-ear-r {
+		transform: rotate(16deg);
+	}
+	.pidan-root[data-state='drag'] .pidan-torso {
+		transform: translateY(3px) scale(0.94, 1.07);
+		animation: none;
+	}
+	.pidan-root[data-state='drag'] .pidan-leg-fl,
+	.pidan-root[data-state='drag'] .pidan-leg-br {
+		animation: pidan-dangle-a 0.36s ease-in-out infinite;
+	}
+	.pidan-root[data-state='drag'] .pidan-leg-fr,
+	.pidan-root[data-state='drag'] .pidan-leg-bl {
+		animation: pidan-dangle-b 0.36s ease-in-out infinite;
+	}
+
+	@keyframes pidan-tail-idle {
+		0%, 100% { transform: rotate(-5deg); }
+		50% { transform: rotate(9deg); }
+	}
+	@keyframes pidan-tail-happy {
+		0%, 100% { transform: rotate(-12deg); }
+		50% { transform: rotate(18deg); }
+	}
+	@keyframes pidan-head-idle {
+		0%, 100% { transform: translateY(0) rotate(0deg); }
+		35% { transform: translateY(-1.5px) rotate(2deg); }
+		70% { transform: translateY(0.5px) rotate(-1.8deg); }
+	}
+	@keyframes pidan-breathe {
+		0%, 100% { transform: scaleY(1); }
+		50% { transform: scaleY(1.025); }
+	}
+	@keyframes pidan-sleep-breathe {
+		0%, 100% { transform: translateY(7px) scale(1.05, 0.91); }
+		50% { transform: translateY(6px) scale(1.07, 0.95); }
+	}
+	@keyframes pidan-ear-twitch {
+		0%, 86%, 100% { transform: rotate(0deg); }
+		89% { transform: rotate(-9deg); }
+		93% { transform: rotate(3deg); }
+	}
+	@keyframes pidan-walk-bob {
 		0%, 100% { transform: translateY(0); }
-		50% { transform: translateY(-4px); }
+		50% { transform: translateY(-2.8px); }
+	}
+	@keyframes pidan-step-a {
+		0%, 100% { transform: rotate(-14deg) translateY(-1px); }
+		50% { transform: rotate(14deg) translateY(1px); }
+	}
+	@keyframes pidan-step-b {
+		0%, 100% { transform: rotate(14deg) translateY(1px); }
+		50% { transform: rotate(-14deg) translateY(-1px); }
+	}
+	@keyframes pidan-purr-wiggle {
+		0%, 100% { transform: rotate(-3.5deg) translateY(-1px); }
+		50% { transform: rotate(3.5deg) translateY(1px); }
+	}
+	@keyframes pidan-chomp {
+		0%, 100% { transform: scaleY(1); }
+		50% { transform: scaleY(0.35); }
+	}
+	@keyframes pidan-dangle-a {
+		0%, 100% { transform: translateY(3px) rotate(-12deg); }
+		50% { transform: translateY(5px) rotate(12deg); }
+	}
+	@keyframes pidan-dangle-b {
+		0%, 100% { transform: translateY(5px) rotate(12deg); }
+		50% { transform: translateY(3px) rotate(-12deg); }
+	}
+
+	/* --- Speech Bubble --- */
+	.pidan-bubble {
+		position: absolute;
+		bottom: calc(100% + 2.25rem);
+		left: 50%;
+		transform: translateX(-50%);
+		width: max-content;
+		max-width: min(15.5rem, 78vw);
+		padding: 0.48rem 0.78rem;
+		border-radius: 0.9rem;
+		border: 1px solid rgba(228, 228, 231, 0.95);
+		background: rgba(255, 255, 255, 0.95);
+		color: rgb(39 39 42);
+		font-size: 0.76rem;
+		line-height: 1.45;
+		box-shadow: 0 12px 28px rgba(15, 23, 42, 0.12);
+		backdrop-filter: blur(12px);
+		pointer-events: none;
+		animation: pidan-bubble-pop 180ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.pidan-bubble[data-align='left'] {
+		left: 0;
+		transform: none;
+	}
+
+	.pidan-bubble[data-align='right'] {
+		left: auto;
+		right: 0;
+		transform: none;
+	}
+
+	:global(html.dark) .pidan-bubble {
+		border-color: rgba(63, 63, 70, 0.95);
+		background: rgba(24, 24, 27, 0.94);
+		color: rgb(244 244 245);
+		box-shadow: 0 14px 32px rgba(0, 0, 0, 0.42);
+	}
+
+	@keyframes pidan-bubble-pop {
+		from {
+			opacity: 0;
+			transform: translateX(-50%) translateY(6px) scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: translateX(-50%) translateY(0) scale(1);
+		}
+	}
+
+	.pidan-bubble[data-align='left'],
+	.pidan-bubble[data-align='right'] {
+		animation: pidan-bubble-pop-edge 180ms ease-out;
+	}
+
+	@keyframes pidan-bubble-pop-edge {
+		from {
+			opacity: 0;
+			transform: translateY(6px) scale(0.96);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	/* --- Hover / Tap Action Toolbar --- */
+	.pidan-toolbar {
+		position: absolute;
+		bottom: calc(100% + 0.1rem);
+		left: 0;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.25rem;
+		padding: 0.24rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(228, 228, 231, 0.92);
+		background: rgba(255, 255, 255, 0.92);
+		box-shadow: 0 10px 26px rgba(15, 23, 42, 0.11);
+		backdrop-filter: blur(12px);
+		opacity: 0;
+		transform: translateY(6px) scale(0.96);
+		pointer-events: none;
+		transition: opacity 170ms ease, transform 170ms ease;
+		white-space: nowrap;
+	}
+
+	/* Invisible hover bridge so moving mouse from sprite to toolbar never drops hover */
+	.pidan-toolbar::after {
+		content: '';
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 100%;
+		height: 12px;
+	}
+
+	.pidan-stage:hover .pidan-toolbar,
+	.pidan-stage:focus-within .pidan-toolbar {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+		pointer-events: auto;
+	}
+
+	:global(html.dark) .pidan-toolbar {
+		border-color: rgba(63, 63, 70, 0.92);
+		background: rgba(24, 24, 27, 0.9);
+		box-shadow: 0 12px 28px rgba(0, 0, 0, 0.42);
+	}
+
+	.pidan-tool-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.22rem;
+		padding: 0.24rem 0.5rem;
+		border-radius: 9999px;
+		border: 0;
+		background: transparent;
+		color: rgb(63 63 70);
+		font-size: 0.7rem;
+		font-weight: 500;
+		line-height: 1.2;
+		transition: background-color 140ms ease, color 140ms ease;
+	}
+
+	.pidan-tool-btn:hover,
+	.pidan-tool-btn.is-active {
+		background: rgba(244, 244, 245, 0.95);
+		color: rgb(24 24 27);
+	}
+
+	.pidan-tool-btn.is-active {
+		background: rgba(186, 230, 253, 0.45);
+		color: rgb(3 105 161);
+	}
+
+	.pidan-tool-btn-accent {
+		background: rgba(180, 126, 36, 0.11);
+		color: rgb(143, 96, 24);
+	}
+
+	.pidan-tool-btn-accent:hover {
+		background: rgba(180, 126, 36, 0.2);
+		color: rgb(120, 78, 16);
+	}
+
+	.pidan-tool-btn-icon {
+		padding: 0.24rem 0.38rem;
+	}
+
+	:global(html.dark) .pidan-tool-btn {
+		color: rgb(212 212 216);
+	}
+
+	:global(html.dark) .pidan-tool-btn:hover {
+		background: rgba(39, 39, 42, 0.95);
+		color: rgb(250 250 250);
+	}
+
+	:global(html.dark) .pidan-tool-btn.is-active {
+		background: rgba(14, 116, 144, 0.35);
+		color: rgb(186 230 253);
+	}
+
+	:global(html.dark) .pidan-tool-btn-accent {
+		background: rgba(226, 190, 110, 0.14);
+		color: rgb(226, 190, 110);
+	}
+
+	:global(html.dark) .pidan-tool-btn-accent:hover {
+		background: rgba(226, 190, 110, 0.24);
+	}
+
+	.pidan-fish-count {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 1rem;
+		height: 1rem;
+		padding: 0 0.25rem;
+		border-radius: 9999px;
+		background: rgba(180, 126, 36, 0.16);
+		color: rgb(143, 96, 24);
+		font-size: 0.62rem;
+		font-weight: 600;
+	}
+
+	:global(html.dark) .pidan-fish-count {
+		background: rgba(226, 190, 110, 0.2);
+		color: rgb(226, 190, 110);
+	}
+
+	.pidan-progress-chip {
+		padding: 0.18rem 0.44rem;
+		border-radius: 9999px;
+		background: rgba(244, 244, 245, 0.9);
+		color: rgb(113 113 122);
+		font-size: 0.65rem;
+		font-weight: 600;
+	}
+
+	:global(html.dark) .pidan-progress-chip {
+		background: rgba(39, 39, 42, 0.9);
+		color: rgb(161 161 170);
+	}
+
+	/* --- Particle FX --- */
+	.pidan-fx-layer {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+		overflow: visible;
+	}
+
+	:global(.pidan-particle) {
+		position: absolute;
+		left: 50%;
+		top: 12px;
+		font-size: 0.95rem;
+		font-weight: 600;
+		color: #ec4899;
+		animation: pidan-float-up 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+	}
+
+	:global(.pidan-particle-zzz) {
+		color: #60a5fa;
+		font-size: 0.75rem;
+		letter-spacing: 0.04em;
+	}
+
+	@keyframes pidan-float-up {
+		0% {
+			opacity: 0;
+			transform: translate(-50%, 6px) scale(0.7);
+		}
+		20% {
+			opacity: 1;
+		}
+		100% {
+			opacity: 0;
+			transform: translate(calc(-50% + var(--px, 0px)), -38px) scale(1.15);
+		}
+	}
+
+	/* --- 3. Stationary Real Pidan Polaroid Card --- */
+	.pidan-real-card {
+		position: fixed;
+		left: clamp(0.85rem, 2.2vw, 1.4rem);
+		bottom: clamp(0.85rem, 2.5vh, 1.35rem);
+		width: min(18rem, calc(100vw - 1.7rem));
+		padding: 0.8rem;
+		border-radius: 1.25rem;
+		border: 1px solid rgba(228, 228, 231, 0.95);
+		background: rgba(255, 255, 255, 0.94);
+		box-shadow: 0 20px 48px rgba(15, 23, 42, 0.16);
+		backdrop-filter: blur(16px);
+		pointer-events: auto;
+		animation: pidan-card-enter 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	:global(html.dark) .pidan-real-card {
+		border-color: rgba(63, 63, 70, 0.92);
+		background: rgba(24, 24, 27, 0.94);
+		box-shadow: 0 22px 52px rgba(0, 0, 0, 0.48);
+	}
+
+	@keyframes pidan-card-enter {
+		from {
+			opacity: 0;
+			transform: translateY(10px) scale(0.97);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
+
+	.pidan-real-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.4rem;
+		margin-bottom: 0.6rem;
+	}
+
+	.pidan-real-brand {
+		display: flex;
+		align-items: center;
+		gap: 0.38rem;
+		min-width: 0;
+	}
+
+	.pidan-real-dot {
+		width: 0.46rem;
+		height: 0.46rem;
+		border-radius: 9999px;
+		background: #60a5fa;
+		box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
+	}
+
+	.pidan-real-title {
+		font-size: 0.76rem;
+		font-weight: 600;
+		color: rgb(24 24 27);
+	}
+
+	:global(html.dark) .pidan-real-title {
+		color: rgb(244 244 245);
+	}
+
+	.pidan-real-counter {
+		font-size: 0.68rem;
+		color: rgb(161 161 170);
+	}
+
+	.pidan-real-header-actions {
+		display: flex;
+		align-items: center;
+		gap: 0.28rem;
+	}
+
+	.pidan-mode-chip {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.24rem;
+		padding: 0.24rem 0.55rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(180, 126, 36, 0.32);
+		background: rgba(180, 126, 36, 0.1);
+		color: rgb(143, 96, 24);
+		font-size: 0.7rem;
+		font-weight: 600;
+		transition: background-color 150ms ease;
+	}
+
+	.pidan-mode-chip:hover {
+		background: rgba(180, 126, 36, 0.18);
+	}
+
+	:global(html.dark) .pidan-mode-chip {
+		border-color: rgba(226, 190, 110, 0.34);
+		background: rgba(226, 190, 110, 0.12);
+		color: rgb(226, 190, 110);
+	}
+
+	.pidan-icon-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.55rem;
+		height: 1.55rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(228, 228, 231, 0.9);
+		background: transparent;
+		color: rgb(113 113 122);
+		font-size: 0.78rem;
+	}
+
+	.pidan-icon-close:hover {
+		background: rgba(244, 244, 245, 0.9);
+		color: rgb(24 24 27);
+	}
+
+	:global(html.dark) .pidan-icon-close {
+		border-color: rgba(63, 63, 70, 0.9);
+		color: rgb(161 161 170);
+	}
+
+	:global(html.dark) .pidan-icon-close:hover {
+		background: rgba(39, 39, 42, 0.95);
+		color: rgb(244 244 245);
+	}
+
+	.pidan-polaroid-frame {
+		position: relative;
+		overflow: hidden;
+		border-radius: 0.9rem;
+		border: 1px solid rgba(228, 228, 231, 0.85);
+		background: rgb(244 244 245);
+		aspect-ratio: 1 / 1;
+	}
+
+	:global(html.dark) .pidan-polaroid-frame {
+		border-color: rgba(63, 63, 70, 0.85);
+		background: rgb(39 39 42);
+	}
+
+	.pidan-photo-zoom {
+		position: relative;
+		display: block;
+		width: 100%;
+		height: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+	}
+
+	.pidan-photo-zoom img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: opacity 150ms ease, transform 260ms ease;
+	}
+
+	.pidan-photo-zoom:hover img {
+		transform: scale(1.025);
+	}
+
+	.pidan-photo-zoom img.is-switching {
+		opacity: 0.25;
+	}
+
+	.pidan-photo-badge {
+		position: absolute;
+		left: 0.55rem;
+		top: 0.55rem;
+		padding: 0.18rem 0.52rem;
+		border-radius: 9999px;
+		background: rgba(15, 23, 42, 0.62);
+		color: #fff;
+		font-size: 0.66rem;
+		font-weight: 500;
+		backdrop-filter: blur(6px);
+	}
+
+	.pidan-zoom-hint {
+		position: absolute;
+		right: 0.55rem;
+		bottom: 0.55rem;
+		padding: 0.16rem 0.48rem;
+		border-radius: 9999px;
+		background: rgba(15, 23, 42, 0.56);
+		color: #fff;
+		font-size: 0.64rem;
+		opacity: 0;
+		transition: opacity 160ms ease;
+		backdrop-filter: blur(6px);
+	}
+
+	.pidan-photo-zoom:hover .pidan-zoom-hint {
+		opacity: 1;
+	}
+
+	.pidan-real-meta {
+		margin-top: 0.62rem;
+	}
+
+	.pidan-card-heading {
+		margin: 0;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: rgb(24 24 27);
+	}
+
+	:global(html.dark) .pidan-card-heading {
+		color: rgb(244 244 245);
+	}
+
+	.pidan-card-quote {
+		margin: 0.22rem 0 0;
+		font-size: 0.74rem;
+		font-weight: 500;
+		color: rgb(143, 96, 24);
+		line-height: 1.45;
+	}
+
+	:global(html.dark) .pidan-card-quote {
+		color: rgb(226, 190, 110);
+	}
+
+	.pidan-card-caption {
+		margin: 0.22rem 0 0;
+		font-size: 0.7rem;
+		line-height: 1.48;
+		color: rgb(113 113 122);
+	}
+
+	:global(html.dark) .pidan-card-caption {
+		color: rgb(161 161 170);
+	}
+
+	.pidan-real-footer {
+		display: grid;
+		grid-template-columns: 1fr auto 1fr;
+		gap: 0.35rem;
+		margin-top: 0.65rem;
+	}
+
+	.pidan-nav-btn {
+		padding: 0.34rem 0.52rem;
+		border-radius: 0.65rem;
+		border: 1px solid rgba(228, 228, 231, 0.92);
+		background: rgba(250, 250, 250, 0.92);
+		color: rgb(63 63 70);
+		font-size: 0.7rem;
+		font-weight: 500;
+		transition: background-color 140ms ease, border-color 140ms ease;
+	}
+
+	.pidan-nav-btn:hover {
+		border-color: rgba(161, 161, 170, 0.9);
+		background: #fff;
+	}
+
+	.pidan-nav-btn-random {
+		font-weight: 600;
+	}
+
+	:global(html.dark) .pidan-nav-btn {
+		border-color: rgba(63, 63, 70, 0.92);
+		background: rgba(39, 39, 42, 0.85);
+		color: rgb(228 228 231);
+	}
+
+	:global(html.dark) .pidan-nav-btn:hover {
+		border-color: rgba(113, 113, 122, 0.95);
+		background: rgba(63, 63, 70, 0.9);
+	}
+
+	/* --- 4. Lightbox --- */
+	.pidan-lightbox {
+		position: fixed;
+		inset: 0;
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 1rem;
+		pointer-events: auto;
+	}
+
+	.pidan-lightbox-backdrop {
+		position: absolute;
+		inset: 0;
+		background: rgba(9, 9, 11, 0.74);
+		backdrop-filter: blur(10px);
+	}
+
+	.pidan-lightbox-panel {
+		position: relative;
+		z-index: 1;
+		width: min(30rem, 92vw);
+		overflow: hidden;
+		border-radius: 1.25rem;
+		border: 1px solid rgba(255, 255, 255, 0.16);
+		background: rgb(24 24 27);
+		box-shadow: 0 28px 64px rgba(0, 0, 0, 0.55);
+	}
+
+	.pidan-lightbox-panel img {
+		display: block;
+		width: 100%;
+		aspect-ratio: 1 / 1;
+		object-fit: cover;
+	}
+
+	.pidan-lightbox-close {
+		position: absolute;
+		right: 0.75rem;
+		top: 0.75rem;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 9999px;
+		border: 1px solid rgba(255, 255, 255, 0.24);
+		background: rgba(9, 9, 11, 0.55);
+		color: #fff;
+		font-size: 0.85rem;
+		backdrop-filter: blur(6px);
+	}
+
+	.pidan-lightbox-bar {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		padding: 0.85rem 1rem;
+		color: rgb(244 244 245);
+	}
+
+	.pidan-lightbox-title {
+		margin: 0;
+		font-size: 0.9rem;
+		font-weight: 600;
+	}
+
+	.pidan-lightbox-sub {
+		margin: 0.2rem 0 0;
+		font-size: 0.75rem;
+		color: rgb(161 161 170);
+	}
+
+	.pidan-lightbox-controls {
+		display: flex;
+		gap: 0.35rem;
+		flex-shrink: 0;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.pidan-tail,
+		.pidan-head,
+		.pidan-torso,
+		.pidan-ear-l,
+		.pidan-eyelid,
+		.pidan-leg {
+			animation: none !important;
+		}
 	}
 </style>
