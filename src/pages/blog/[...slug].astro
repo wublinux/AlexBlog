@@ -48,10 +48,54 @@ const languageSwitch =
 			}
 		: undefined;
 
+const encodeSlugPath = (value: string) =>
+	value
+		.split('/')
+		.map((part) => encodeURIComponent(part))
+		.join('/');
+
+const toHreflang = (lang?: 'cn' | 'en') => (lang === 'cn' ? 'zh-CN' : 'en');
+const siteOrigin = (Astro.site?.toString() ?? 'https://letsgogogogogo.pp.ua').replace(/\/+$/, '');
+const currentEncodedSlug = encodeSlugPath(post.id);
+
+const alternates =
+	altPost && currentLang && targetLang
+		? [
+				{
+					hreflang: toHreflang(currentLang),
+					href: `${siteOrigin}${BASE}blog/${currentEncodedSlug}/`,
+				},
+				{
+					hreflang: toHreflang(targetLang),
+					href: `${siteOrigin}${BASE}blog/${encodeSlugPath(altPost.id)}/`,
+				},
+				{
+					hreflang: 'x-default',
+					href: `${siteOrigin}${BASE}blog/${encodeSlugPath(currentLang === 'cn' ? post.id : altPost.id)}/`,
+				},
+			]
+		: undefined;
+
+const markdownAlternate = post.data.draft === true ? undefined : `${BASE}blog/${currentEncodedSlug}.md`;
+const generatedOgImage = `${BASE}og/${currentEncodedSlug}.png`;
+
 // Get related posts (same language, ranked by tag similarity)
 const relatedPosts = getRelatedPosts(post, allPosts, 4);
 ---
 
-<BlogPost {...post.data} headings={headings} rawBody={post.body} slug={post.id} analyticsKey={analyticsKey} languageSwitch={languageSwitch} relatedPosts={relatedPosts} relatedPostsLang={currentLang}>
+<BlogPost
+	{...post.data}
+	headings={headings}
+	rawBody={post.body}
+	slug={post.id}
+	analyticsKey={analyticsKey}
+	languageSwitch={languageSwitch}
+	relatedPosts={relatedPosts}
+	relatedPostsLang={currentLang}
+	postLang={currentLang}
+	alternates={alternates}
+	markdownAlternate={markdownAlternate}
+	generatedOgImage={generatedOgImage}
+>
 	<Content />
 </BlogPost>

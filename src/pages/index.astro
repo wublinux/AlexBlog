@@ -11,8 +11,10 @@ import PostCard from '../components/PostCard.astro';
 import TerminalQuote from '../components/TerminalQuote.astro';
 import InteractiveTerminal from '../components/InteractiveTerminal.astro';
 import { GITHUB_URL, SITE_DESCRIPTION, SITE_TITLE } from '../consts';
+import { buildWebsiteJsonLd } from '../utils/seo';
 
 const BASE = import.meta.env.BASE_URL;
+const websiteJsonLd = buildWebsiteJsonLd(Astro.site?.toString() ?? 'https://letsgogogogogo.pp.ua');
 // Keep home preview aligned with list pagination size for consistent editorial cadence.
 const posts = (await getCollection('blog'))
 	.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
@@ -24,14 +26,18 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 <!doctype html>
 <html lang="en">
 	<head>
-		<BaseHead title={`${SITE_TITLE} - Tech, Notes & Life`} description="A personal blog about tech, notes, and life. 记录技术、笔记和生活。" />
+		<BaseHead
+			title={`${SITE_TITLE} - Tech, Notes & Life`}
+			description="A personal blog about tech, notes, and life. 记录技术、笔记和生活。"
+			jsonLd={websiteJsonLd}
+		/>
 	</head>
 	<body>
 		<FloatingClouds />
 		<SakuraFaller density={0.45} heightVh={46} />
 		<Header />
 		<MobileDrawer />
-		<main class="page-shell page-fade-in py-10 md:py-14" transition:name="page-main" transition:animate="fade">
+		<main class="vt-page-main page-shell page-fade-in py-10 md:py-14">
 			<div class="space-y-6">
 				<section class="hero-enter overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
 					<div class="relative h-[44vh] min-h-[300px] w-full overflow-hidden">
@@ -52,7 +58,7 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 
 				<section class="section-enter section-enter-delay-1 grid grid-cols-1 gap-6 items-start md:grid-cols-[minmax(0,1fr)_auto] md:items-center">
 					<div class="hero-enter hero-enter-delay-2 max-w-[40rem]">
-						<h1 class="brand-wordmark flex flex-wrap items-center gap-x-2.5 gap-y-1" transition:name="page-title" transition:animate="fade">
+						<h1 class="vt-page-title brand-wordmark flex flex-wrap items-center gap-x-2.5 gap-y-1">
 							<BrandMark class="h-[2.3rem] -ml-1 self-center md:h-[3.05rem]" />
 							<span class="text-[2.55rem] leading-none text-zinc-900 dark:text-zinc-100 md:text-[3.4rem]">
 								Alex<span class="brand-apostrophe">&rsquo;</span>s
@@ -162,11 +168,12 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 			</div>
 		</div>
 
-		<script is:inline>
+		<script>
 			(() => {
 				/*
 				 * Easter egg: click the "7.7" badge 5 times to reveal hidden content.
 				 */
+				const win = window as any;
 				const initEasterEgg = () => {
 					const trigger = document.querySelector('[data-easter-egg-trigger]');
 					const overlay = document.querySelector('[data-easter-egg-overlay]');
@@ -230,7 +237,7 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 			})();
 		</script>
 
-		<script is:inline>
+		<script>
 			(() => {
 				/*
 				 * Scroll parallax for hero image.
@@ -283,7 +290,7 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 			})();
 		</script>
 
-		<script is:inline>
+		<script>
 			(() => {
 				/*
 				 * Pop-art dot ribbon: a drifting halftone wave on <canvas>.

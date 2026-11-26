@@ -43,7 +43,7 @@ const {
 } = Astro.props;
 ---
 
-<section class="giscus-comments mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-700">
+<section class="giscus-comments mt-10 pt-8 border-t border-zinc-200 dark:border-zinc-700" data-pagefind-ignore>
 	<h2 class="text-lg font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 mb-6">Comments</h2>
 	<div class="giscus" data-giscus-configured>
 		<script
@@ -67,7 +67,7 @@ const {
 	</div>
 </section>
 
-<script is:inline>
+<script>
 	/*
 	 * Sync Giscus theme with site dark mode.
 	 */
@@ -75,7 +75,7 @@ const {
 		const updateGiscusTheme = () => {
 			const isDark = document.documentElement.classList.contains('dark');
 			const theme = isDark ? 'transparent_dark' : 'light';
-			const iframe = document.querySelector('iframe.giscus-frame');
+			const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
 			if (iframe) {
 				iframe.contentWindow?.postMessage(
 					{ giscus: { setConfig: { theme } } },

@@ -43,9 +43,9 @@ const posts = (await getCollection('blog'))
 	<body>
 		<Header />
 		<MobileDrawer />
-		<main class="page-shell page-fade-in py-10 md:py-14" transition:name="page-main" transition:animate="fade">
+		<main class="vt-page-main page-shell page-fade-in py-10 md:py-14">
 			<section class="section-enter mx-auto max-w-4xl">
-				<h1 class="text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 md:text-4xl" transition:name="page-title" transition:animate="fade">
+				<h1 class="vt-page-title text-3xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100 md:text-4xl">
 					Tag: {displayTag}
 				</h1>
 				<p class="mt-2 font-sans text-zinc-500 dark:text-zinc-400">

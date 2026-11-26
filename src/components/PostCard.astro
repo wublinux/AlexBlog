@@ -71,15 +71,16 @@ const Heading = titleTag;
 	</a>
 </div>
 
-<script is:inline>
+<script>
 	(() => {
-		const fmt = window.__formatCompactViewCount || function(c) { return String(Number(c) || 0); };
+		const win = window as any;
+		const fmt = win.__formatCompactViewCount || function(c: unknown) { return String(Number(c) || 0); };
 
 		const loadPostCardViews = async () => {
 			const roots = Array.from(document.querySelectorAll('[data-post-card-views-root]'));
 			if (!roots.length) return;
 
-			const apiBase = window.__API_BASE || '';
+			const apiBase = win.__API_BASE || '';
 			const uniqueKeys = [...new Set(
 				roots
 					.map((root) => root.getAttribute('data-post-card-views-root') || '')

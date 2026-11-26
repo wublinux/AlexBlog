@@ -3,6 +3,23 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* Self-hosted CJK UI/article typeface bundled via public/fonts. */
+@font-face {
+	font-family: "Alibaba PuHuiTi";
+	src: url('/fonts/AlibabaPuHuiTi-3-55-RegularL3.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
+	font-family: "Alibaba PuHuiTi";
+	src: url('/fonts/AlibabaPuHuiTi-3-75-SemiBold.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
 /* Base layer keeps global rendering stable before component-level styles load. */
 @layer base {
 	:root {
@@ -1150,6 +1167,20 @@ section {
 	}
 }
 
+/* Named view-transition surfaces defined in static CSS instead of inline Astro styles
+   so strict CSP (style-src-elem) passes without unhashed inline <style> blocks. */
+.vt-page-main {
+	view-transition-name: page-main;
+}
+
+.vt-page-title {
+	view-transition-name: page-title;
+}
+
+.vt-lang-switch {
+	view-transition-name: lang-switch;
+}
+
 ::view-transition-group(page-main),
 ::view-transition-group(page-title) {
 	/* Shared transition groups use a short ease-out to reduce perceived route latency. */
@@ -1461,7 +1492,7 @@ html.dark .field-input:focus {
 
 .markdown-prose,
 article {
-	font-family: "Alibaba PuHuiTi", Inter, system-ui, -apple-system, "Segoe UI", sans-serif !important;
+	font-family: "Alibaba PuHuiTi", var(--font-inter), Inter, system-ui, -apple-system, "Segoe UI", sans-serif !important;
 }
 
 .markdown-prose :where(p, li, blockquote, table, span, h1, h2, h3, h4),
@@ -1471,7 +1502,7 @@ article :where(p, li, blockquote, table, span, h1, h2, h3, h4) {
 
 .markdown-prose :where(code, pre),
 article :where(code, pre) {
-	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
+	font-family: var(--font-jetbrains-mono), "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace !important;
 }
 
 /* ================================
@@ -1674,7 +1705,26 @@ html.dark .card-spotlight::before {
 	);
 }
 
-/* --- Scroll-triggered reveal (html.js-reveal is set by JS, so no-JS users see everything) --- */
+/* --- Scroll-triggered reveal: native CSS view() timeline with IntersectionObserver fallback --- */
+@supports (animation-timeline: view()) {
+	[data-reveal] {
+		animation: css-view-reveal linear both;
+		animation-timeline: view();
+		animation-range: entry 0% cover 22%;
+	}
+}
+
+@keyframes css-view-reveal {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
 html.js-reveal [data-reveal] {
 	opacity: 0;
 	transform: translateY(14px);
@@ -2026,9 +2076,9 @@ h1:hover .brand-mark .brand-mark-path {
 	}
 }
 
-/* --- Brand wordmark (Instrument Serif, glyph-subset loaded in BaseHead) --- */
+/* --- Brand wordmark (Instrument Serif self-hosted via Astro Fonts API) --- */
 .brand-wordmark {
-	font-family: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+	font-family: var(--font-instrument-serif), 'Instrument Serif', Georgia, 'Times New Roman', serif;
 	font-weight: 400;
 	letter-spacing: 0.005em;
 }
@@ -2376,7 +2426,9 @@ html.dark .parthenon-grp {
 		animation: none !important;
 	}
 
-	html.js-reveal [data-reveal] {
+	html.js-reveal [data-reveal],
+	[data-reveal] {
+		animation: none !important;
 		opacity: 1 !important;
 		transform: none !important;
 	}

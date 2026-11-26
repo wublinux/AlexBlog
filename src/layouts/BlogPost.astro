@@ -11,6 +11,7 @@ import TocSidebar from '../components/TocSidebar.astro';
 import TocDrawer from '../components/TocDrawer.astro';
 import Giscus from '../components/Giscus.astro';
 import { getPostAnalyticsKey } from '../utils/postAnalytics';
+import { buildBlogPostingJsonLd } from '../utils/seo';
 import { getTagSlug } from '../utils/tags';
 
 /* Blog post layout coordinates desktop TOC, mobile drawer TOC, and route-transition-safe scripts. */
@@ -27,6 +28,10 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	};
 	relatedPosts?: CollectionEntry<'blog'>[];
 	relatedPostsLang?: 'cn' | 'en';
+	postLang?: 'cn' | 'en';
+	alternates?: Array<{ hreflang: string; href: string }>;
+	markdownAlternate?: string;
+	generatedOgImage?: string;
 	giscusRepo?: string;
 	giscusRepoId?: string;
 	giscusCategoryId?: string;
@@ -40,6 +45,7 @@ const {
 	heroImage,
 	profileImage,
 	tags = [],
+	author,
 	headings = [],
 	rawBody = '',
 	slug,
@@ -48,12 +54,25 @@ const {
 	languageSwitch,
 	relatedPosts = [],
 	relatedPostsLang = 'en',
+	postLang,
+	alternates = [],
+	markdownAlternate,
+	generatedOgImage,
 	giscusRepo = '',
 	giscusRepoId = '',
 	giscusCategoryId = '',
 } = Astro.props;
 
 const BASE = import.meta.env.BASE_URL;
+const siteOrigin = (Astro.site?.toString() ?? 'https://letsgogogogogo.pp.ua').replace(/\/+$/, '');
+const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).toString();
+const ogImage = heroImage ?? (metaMode === 'article' ? generatedOgImage : undefined);
+const resolvedOgImageUrl = new URL(
+	typeof ogImage === 'string' ? ogImage : ogImage?.src ?? `${BASE}image/og-default.png`,
+	Astro.site ?? Astro.url
+).toString();
+const htmlLang = postLang === 'cn' ? 'zh-CN' : 'en';
+
 const withBase = (path: string) => {
 	// Keep public asset references resilient across root and subpath deployments.
 	if (!path) return path;
@@ -68,11 +87,41 @@ const hasToc = tocItems.length > 0;
 const chars = rawBody.replace(/\s+/g, '').length;
 const minutes = Math.max(1, Math.ceil(chars / 950));
 const charsLabel = chars.toLocaleString('en-US');
+
+const articleJsonLd =
+	metaMode === 'article'
+		? buildBlogPostingJsonLd({
+				siteUrl: siteOrigin,
+				canonicalUrl,
+				title,
+				description,
+				pubDate,
+				updatedDate,
+				imageUrl: resolvedOgImageUrl,
+				author,
+				tags,
+				lang: postLang,
+				wordCount: chars,
+			})
+		: undefined;
 ---
 
-<html lang="en">
+<html lang={htmlLang}>
 	<head>
-		<BaseHead title={`${title} | Alex's Blog`} description={description} />
+		<BaseHead
+			title={`${title} | Alex's Blog`}
+			description={description}
+			image={ogImage}
+			imageAlt={title}
+			ogType={metaMode === 'article' ? 'article' : 'website'}
+			publishedTime={metaMode === 'article' ? pubDate : undefined}
+			modifiedTime={metaMode === 'article' ? updatedDate ?? pubDate : undefined}
+			tags={metaMode === 'article' ? tags : undefined}
+			author={metaMode === 'article' ? author || 'Alex Huang' : undefined}
+			alternates={alternates}
+			markdownAlternate={markdownAlternate}
+			jsonLd={articleJsonLd}
+		/>
 	</head>
 	<body>
 		<!-- Optional decorative background layer (e.g. the About page meteor shower). -->
@@ -84,7 +133,7 @@ const charsLabel = chars.toLocaleString('en-US');
 		<TocDrawer headings={tocItems} />
 
 		<!-- Page fade is CSS-driven so route changes remain smooth even when shared-element transitions are bypassed. -->
-		<main class="blog-post-page page-fade-in min-h-screen min-w-0 w-full py-10 md:py-14" transition:name="page-main" transition:animate="fade">
+		<main class="vt-page-main blog-post-page page-fade-in min-h-screen min-w-0 w-full py-10 md:py-14">
 			<div class:list={[
 				'mx-auto min-w-0 px-4 sm:px-6 lg:px-8',
 				metaMode === 'page' ? 'max-w-4xl' : 'max-w-7xl',
@@ -97,7 +146,7 @@ const charsLabel = chars.toLocaleString('en-US');
 				]}>
 					<aside class:list={[
 						metaMode === 'page' ? 'hidden' : 'hidden md:block',
-					]} data-toc-fade-wrap>
+					]} data-toc-fade-wrap data-pagefind-ignore>
 						<div class="sticky top-24 self-start">
 							<div class="relative">
 								<div class="toc-scroll max-h-[calc(100vh-7.5rem)] overflow-auto pr-2" data-toc-scroll="sidebar">
@@ -128,7 +177,7 @@ const charsLabel = chars.toLocaleString('en-US');
 					<main class:list={[
 						'min-w-0',
 						metaMode !== 'page' && 'lg:col-start-2',
-					]}>
+					]} data-pagefind-body>
 						<header class="mb-10 min-w-0 border-b border-zinc-200 pb-6 dark:border-zinc-700">
 							{
 								metaMode === 'page' ? (
@@ -142,18 +191,18 @@ const charsLabel = chars.toLocaleString('en-US');
 								) : (
 									<p class="m-0 text-sm text-zinc-500 dark:text-zinc-400">
 										<FormattedDate date={pubDate} />
-										<span class="mx-1.5">&middot;</span>
-										<span class="inline-flex items-center gap-1 align-middle" data-post-views-root={analyticsKey ?? ''}>
+										<span class="mx-1.5" data-pagefind-ignore>&middot;</span>
+										<span class="inline-flex items-center gap-1 align-middle" data-post-views-root={analyticsKey ?? ''} data-pagefind-ignore>
 											<svg viewBox="0 0 24 24" class="h-3.5 w-3.5 opacity-70" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
 												<path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z" stroke-linecap="round" stroke-linejoin="round" />
 												<circle cx="12" cy="12" r="3" stroke-linecap="round" stroke-linejoin="round" />
 											</svg>
 											<span data-post-views>...</span>
 										</span>
-										<span class="mx-1.5">&middot;</span>
-										<span>{charsLabel} chars</span>
-										<span class="mx-1.5">&middot;</span>
-										<span>{minutes} min</span>
+										<span class="mx-1.5" data-pagefind-ignore>&middot;</span>
+										<span data-pagefind-ignore>{charsLabel} chars</span>
+										<span class="mx-1.5" data-pagefind-ignore>&middot;</span>
+										<span data-pagefind-ignore>{minutes} min</span>
 										{updatedDate && (
 											<span class="ml-3 inline-block italic">
 												Updated <FormattedDate date={updatedDate} />
@@ -166,7 +215,6 @@ const charsLabel = chars.toLocaleString('en-US');
 							<div class="mt-3 flex min-w-0 items-start justify-between gap-4">
 								<h1
 									class="min-w-0 flex-1 font-sans text-3xl font-semibold leading-tight tracking-tight text-zinc-900 [overflow-wrap:anywhere] dark:text-zinc-100 md:text-4xl"
-									transition:animate="fade"
 								>
 									{title}
 								</h1>
@@ -187,9 +235,7 @@ const charsLabel = chars.toLocaleString('en-US');
 								<div class="mt-4">
 									<a
 										href={languageSwitch.href}
-										class="inline-flex items-center rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 no-underline transition-colors hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
-										transition:name="lang-switch"
-										transition:animate="none"
+										class="vt-lang-switch inline-flex items-center rounded-lg border border-zinc-200 px-3 py-1.5 text-sm font-medium text-zinc-700 no-underline transition-colors hover:border-zinc-300 hover:text-zinc-900 dark:border-zinc-700 dark:text-zinc-300 dark:hover:border-zinc-500 dark:hover:text-zinc-100"
 										data-astro-reload
 									>
 										{languageSwitch.label}
@@ -236,7 +282,7 @@ const charsLabel = chars.toLocaleString('en-US');
 						<!-- Related Posts Section -->
 						{
 							relatedPosts.length > 0 && (
-								<section class="mt-12 border-t border-zinc-200 pt-10 dark:border-zinc-700">
+								<section class="mt-12 border-t border-zinc-200 pt-10 dark:border-zinc-700" data-pagefind-ignore>
 									<h2 class="mb-6 font-sans text-2xl font-semibold tracking-tight text-zinc-900 dark:text-zinc-100">
 										{relatedPostsLang === 'cn' ? '相关推荐' : 'Related Posts'}
 									</h2>
@@ -355,7 +401,8 @@ const charsLabel = chars.toLocaleString('en-US');
 			}
 		</style>
 
-		<script is:inline>
+		<script>
+			const win = window as any;
 			const scrollToTopIfNoHash = () => {
 				// Manual restoration prevents stale scroll positions when View Transitions swap pages.
 				try {

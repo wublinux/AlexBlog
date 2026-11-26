@@ -21,7 +21,7 @@ const BASE = import.meta.env.BASE_URL;
 	<body>
 		<Header />
 		<MobileDrawer />
-		<main class="grid min-h-[calc(100vh-4rem)] place-items-center px-6 py-20 sm:py-24" transition:animate="fade">
+		<main class="vt-page-main grid min-h-[calc(100vh-4rem)] place-items-center px-6 py-20 sm:py-24">
 			<div class="w-full max-w-2xl">
 				<div class="text-center">
 					<p class="hero-enter font-mono text-[12px] font-semibold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500">
@@ -77,7 +77,7 @@ const BASE = import.meta.env.BASE_URL;
 		</main>
 		<Footer />
 
-		<script is:inline>
+		<script>
 			(() => {
 				const init = () => {
 					const pathEl = document.querySelector('[data-404-path]');

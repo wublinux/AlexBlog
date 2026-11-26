@@ -9,7 +9,7 @@ import mdx from '@astrojs/mdx';
 import { unified } from '@astrojs/markdown-remark';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
-import { defineConfig } from 'astro/config';
+import { defineConfig, fontProviders } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 
@@ -122,6 +122,67 @@ export default defineConfig({
 	base: runtimeBase,
 	trailingSlash: 'always',
 	output: 'static',
+	fonts: [
+		{
+			provider: fontProviders.google(),
+			name: 'Inter',
+			cssVariable: '--font-inter',
+			weights: [400, 500, 600],
+			styles: ['normal'],
+			subsets: ['latin'],
+			display: 'swap',
+			fallbacks: ['system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'Instrument Serif',
+			cssVariable: '--font-instrument-serif',
+			weights: [400],
+			styles: ['normal', 'italic'],
+			subsets: ['latin'],
+			display: 'swap',
+			fallbacks: ['Georgia', 'Times New Roman', 'serif'],
+		},
+		{
+			provider: fontProviders.google(),
+			name: 'JetBrains Mono',
+			cssVariable: '--font-jetbrains-mono',
+			weights: [400, 500],
+			styles: ['normal'],
+			subsets: ['latin'],
+			display: 'optional',
+			fallbacks: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace'],
+		},
+	],
+	security: {
+		csp: {
+			algorithm: 'SHA-256',
+			directives: [
+				"default-src 'self'",
+				"base-uri 'self'",
+				"object-src 'none'",
+				"img-src 'self' data: https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com",
+				"font-src 'self' data:",
+				"connect-src 'self' https://api.github.com https://cloudflareinsights.com",
+				"frame-src https://giscus.app",
+				"form-action 'self' https://github.com",
+			],
+			scriptDirective: {
+				resources: [
+					"'self'",
+					"'wasm-unsafe-eval'",
+					'https://giscus.app',
+					'https://static.cloudflareinsights.com',
+				],
+			},
+			styleDirective: {
+				resources: [
+					{ resource: "'self'", kind: 'element' },
+					{ resource: "'unsafe-inline'", kind: 'attribute' },
+				],
+			},
+		},
+	},
 	integrations: [
 		react(),
 		mdx(),

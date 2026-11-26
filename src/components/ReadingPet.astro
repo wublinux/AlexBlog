@@ -1,11 +1,16 @@
 ---
 import { PIDAN_DIALOGUES, PIDAN_PHOTO_CARDS, PIDAN_PROFILE } from '../data/pet/pidan';
+import { serializeJsonLd } from '../utils/seo';
 
 const BASE = import.meta.env.BASE_URL;
 const cardsPayload = PIDAN_PHOTO_CARDS.map((card) => ({
 	...card,
 	src: `${BASE}${card.image}`,
 }));
+const pidanConfigJson = serializeJsonLd({
+	cardsPayload,
+	dialogues: PIDAN_DIALOGUES,
+});
 ---
 
 <div
@@ -13,6 +18,7 @@ const cardsPayload = PIDAN_PHOTO_CARDS.map((card) => ({
 	class="pidan-root"
 	transition:persist="pidan-pet"
 	data-pidan-root
+	data-pagefind-ignore
 	data-mode="chibi"
 	data-minimized="false"
 	data-state="idle"
@@ -427,14 +433,18 @@ const cardsPayload = PIDAN_PHOTO_CARDS.map((card) => ({
 	</div>
 </div>
 
-<script
-	is:inline
-	define:vars={{
-		cardsPayload,
-		dialogues: PIDAN_DIALOGUES,
-	}}
->
+<script type="application/json" id="pidan-config" set:html={pidanConfigJson} />
+
+<script>
 	(() => {
+		const configEl = document.getElementById('pidan-config');
+		let parsedConfig: { cardsPayload?: any[]; dialogues?: any } = {};
+		try {
+			parsedConfig = JSON.parse(configEl?.textContent || '{}');
+		} catch {}
+		const cardsPayload = Array.isArray(parsedConfig.cardsPayload) ? parsedConfig.cardsPayload : [];
+		const dialogues = parsedConfig.dialogues || { greet: [], idle: [], happy: [], sleep: [] };
+
 		const STORAGE_KEY = 'alexblog_pidan_v1';
 
 		const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];

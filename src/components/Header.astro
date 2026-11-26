@@ -3,14 +3,13 @@ import { GITHUB_URL, SITE_TITLE } from '../consts';
 import { getNavLinks } from '../data/navLinks';
 import BrandMark from './BrandMark.astro';
 import HeaderLink from './HeaderLink.astro';
-
-
+import SearchModal from './SearchModal.astro';
 
 /*
  * Global site header:
  * - provides primary navigation on desktop
  * - exposes mobile trigger hooks for navigation/TOC drawers
- * - owns theme toggle and social identity actions
+ * - provides site search trigger, native Popover RSS menu, and theme toggle
  */
 interface Props {
 	// Enables TOC trigger only for pages that actually provide headings.
@@ -23,7 +22,10 @@ const NAV_LINKS = getNavLinks(BASE);
 const { showTocButton = false } = Astro.props as Props;
 ---
 
-<header class="site-header sticky top-0 z-50 border-b border-zinc-200/70 bg-zinc-50/72 backdrop-blur-xl transition-colors duration-200 dark:border-zinc-800/80 dark:bg-zinc-950/72">
+<header
+	class="site-header sticky top-0 z-50 border-b border-zinc-200/70 bg-zinc-50/72 backdrop-blur-xl transition-colors duration-200 dark:border-zinc-800/80 dark:bg-zinc-950/72"
+	data-pagefind-ignore
+>
 	<nav class="page-shell flex h-16 items-center justify-between gap-4">
 		<div class="flex items-center gap-6">
 			<!-- Stable trigger ID consumed by MobileDrawer script. -->
@@ -73,15 +75,32 @@ const { showTocButton = false } = Astro.props as Props;
 			</div>
 		</div>
 		<div class="flex items-center gap-2">
-			<!-- RSS Dropdown -->
+			<!-- Site Search trigger (Cmd/Ctrl+K) -->
+			<button
+				type="button"
+				data-search-trigger
+				class="header-toolbar-button inline-flex h-8 items-center gap-2 px-2.5 text-xs font-medium"
+				aria-label="Search site (Cmd+K)"
+				title="Search (⌘K)"
+			>
+				<svg viewBox="0 0 24 24" class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+					<circle cx="11" cy="11" r="7" />
+					<path d="m20 20-3.5-3.5" stroke-linecap="round" />
+				</svg>
+				<span class="hidden sm:inline font-mono text-[11px] opacity-75">⌘K</span>
+			</button>
+
+			<!-- RSS Popover Menu (Native Popover API + CSS Anchor Positioning) -->
 			<div class="relative" id="rss-dropdown">
 				<button
 					type="button"
 					id="rss-button"
+					popovertarget="rss-menu"
 					class="header-toolbar-icon icon-button inline-flex items-center justify-center"
 					aria-label="RSS Feed"
 					aria-expanded="false"
-					aria-haspopup="true"
+					aria-haspopup="menu"
+					aria-controls="rss-menu"
 				>
 					<svg viewBox="0 0 24 24" class="h-5 w-5 fill-current" aria-hidden="true">
 						<path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1Z" />
@@ -89,12 +108,13 @@ const { showTocButton = false } = Astro.props as Props;
 				</button>
 				<div
 					id="rss-menu"
-					class="absolute right-0 top-full z-50 mt-2 hidden w-36 rounded-xl border border-zinc-200/80 bg-white/92 py-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.14)] dark:border-zinc-700/80 dark:bg-zinc-900/92"
+					popover="auto"
+					class="rss-popover w-36 rounded-xl border border-zinc-200/80 bg-white/94 py-1.5 shadow-[0_18px_40px_rgba(15,23,42,0.14)] backdrop-blur-xl dark:border-zinc-700/80 dark:bg-zinc-900/94"
 					role="menu"
 				>
 					<a
 						href={`${BASE}rss.xml`}
-						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
+						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 no-underline transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
 						role="menuitem"
 					>
 						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -104,7 +124,7 @@ const { showTocButton = false } = Astro.props as Props;
 					</a>
 					<a
 						href={`${BASE}rss-zh.xml`}
-						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
+						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 no-underline transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
 						role="menuitem"
 					>
 						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -114,7 +134,7 @@ const { showTocButton = false } = Astro.props as Props;
 					</a>
 					<a
 						href={`${BASE}rss-en.xml`}
-						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
+						class="flex items-center gap-2 px-3 py-2 text-sm text-zinc-700 no-underline transition-colors hover:bg-zinc-100/90 dark:text-zinc-300 dark:hover:bg-zinc-800"
 						role="menuitem"
 					>
 						<svg class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -186,7 +206,7 @@ const { showTocButton = false } = Astro.props as Props;
 		</div>
 	</nav>
 </header>
-
+<SearchModal />
 
 <style is:global>
 	.header-toolbar-group {
@@ -257,313 +277,174 @@ const { showTocButton = false } = Astro.props as Props;
 		height: 2rem;
 		width: 2rem;
 	}
+
+	/* Native Popover + CSS Anchor Positioning for the RSS menu */
+	#rss-button {
+		anchor-name: --rss-trigger;
+	}
+
+	.rss-popover {
+		margin: 0;
+		inset: auto;
+	}
+
+	@supports (anchor-name: --rss-trigger) {
+		.rss-popover {
+			position: fixed;
+			position-anchor: --rss-trigger;
+			top: calc(anchor(bottom) + 0.5rem);
+			right: anchor(right);
+		}
+	}
+
+	.rss-popover:popover-open {
+		animation: rss-popover-in 150ms cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	@keyframes rss-popover-in {
+		from {
+			opacity: 0;
+			transform: translateY(-4px) scale(0.97);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.rss-popover:popover-open {
+			animation: none;
+		}
+	}
 </style>
 
-<script is:inline>
-	const initAuthButton = async () => {
-		const { storeTokenFromHash, getCurrentUser, getAuthToken, logout } = window.__auth || {};
-		if (!storeTokenFromHash || !getCurrentUser || !getAuthToken || !logout) {
-			setTimeout(initAuthButton, 100);
-			return;
-		}
+<script>
+	(() => {
+		const win = window as any;
 
-		const loginButton = document.getElementById('auth-button');
-		const userDropdown = document.getElementById('user-dropdown');
-		const userAvatar = document.getElementById('user-avatar');
-		const userName = document.getElementById('user-name');
-		const userDropdownButton = document.getElementById('user-dropdown-button');
-		const userDropdownMenu = document.getElementById('user-dropdown-menu');
-		const logoutButton = document.getElementById('logout-button');
-		const modal = document.getElementById('login-modal');
-		const modalClose = document.getElementById('login-modal-close');
-		const dropdownAvatar = document.getElementById('dropdown-user-avatar');
-		const settingsButton = document.getElementById('settings-button');
-		const fallbackAvatar = 'https://github.com/wublinux.png?size=160';
+		const initThemeToggle = () => {
+			const buttons = Array.from(document.querySelectorAll<HTMLButtonElement>('[id="theme-toggle"], [id="theme-toggle-mobile"]'));
+			if (!buttons.length) return;
 
-		if (!loginButton || !userDropdown || !userDropdownButton || !userDropdownMenu || !logoutButton || !settingsButton) {
-			return;
-		}
+			const root = document.documentElement;
+			const storageKey = 'theme';
+			const applyStoredTheme = () => {
+				const stored = localStorage.getItem(storageKey);
+				const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+				const theme = stored === 'dark' || stored === 'light'
+					? stored
+					: (systemPrefersDark ? 'dark' : 'light');
+				root.classList.toggle('dark', theme === 'dark');
+				root.dataset.theme = theme;
+				if (typeof win.__syncThemeColor === 'function') win.__syncThemeColor(theme === 'dark');
+				return theme === 'dark';
+			};
 
-		const openModal = () => {
-			if (!modal) return;
-			requestAnimationFrame(() => {
-				modal.classList.remove('opacity-0', 'invisible');
-				modal.classList.add('opacity-100');
-				const content = modal.querySelector('.modal-content');
-				if (content) {
-					content.classList.remove('scale-95', 'opacity-0');
-					content.classList.add('scale-100', 'opacity-100');
-				}
-				modal.setAttribute('aria-hidden', 'false');
-			});
-		};
-
-		const closeModal = () => {
-			if (!modal) return;
-			modal.classList.remove('opacity-100');
-			modal.classList.add('opacity-0');
-			const content = modal.querySelector('.modal-content');
-			if (content) {
-				content.classList.remove('scale-100', 'opacity-100');
-				content.classList.add('scale-95', 'opacity-0');
-			}
-			setTimeout(() => modal.classList.add('invisible'), 200);
-			modal.setAttribute('aria-hidden', 'true');
-		};
-
-		const toggleDropdown = () => {
-			if (!userDropdownButton || !userDropdownMenu) return;
-			const isExpanded = userDropdownButton.getAttribute('aria-expanded') === 'true';
-			userDropdownButton.setAttribute('aria-expanded', String(!isExpanded));
-			if (isExpanded) {
-				userDropdownMenu.classList.add('opacity-0', 'invisible');
-				userDropdownMenu.classList.remove('opacity-100', 'visible');
-			} else {
-				userDropdownMenu.classList.remove('opacity-0', 'invisible');
-				userDropdownMenu.classList.add('opacity-100', 'visible');
-			}
-		};
-
-		const closeDropdown = () => {
-			if (!userDropdownButton || !userDropdownMenu) return;
-			userDropdownButton.setAttribute('aria-expanded', 'false');
-			userDropdownMenu.classList.add('opacity-0', 'invisible');
-			userDropdownMenu.classList.remove('opacity-100', 'visible');
-		};
-
-		const applyUserToUi = (user) => {
-			const nextAvatar = user?.avatar || fallbackAvatar;
-			const nextName = user?.username || 'User';
-			if (userAvatar) userAvatar.src = nextAvatar;
-			if (userName) userName.textContent = nextName;
-			if (dropdownAvatar) dropdownAvatar.src = nextAvatar;
-		};
-
-		const showLoginButton = () => {
-			loginButton.classList.remove('hidden');
-			loginButton.classList.add('inline-flex');
-			userDropdown.classList.add('hidden');
-			userDropdown.style.display = '';
-			closeDropdown();
-		};
-
-		const showUserDropdown = () => {
-			loginButton.classList.add('hidden');
-			loginButton.classList.remove('inline-flex');
-			userDropdown.classList.remove('hidden');
-			userDropdown.style.display = 'block';
-		};
-
-		if (userDropdown.dataset.authBound !== 'true') {
-			userDropdown.dataset.authBound = 'true';
-
-			window.addEventListener('blog:user-updated', (event) => {
-				const detail = event.detail ?? {};
-				applyUserToUi({
-					avatar: detail.avatarUrl,
-					username: detail.username,
+			const updateAria = () => {
+				const isDark = root.classList.contains('dark');
+				buttons.forEach((button) => {
+					button.setAttribute('aria-pressed', String(isDark));
+					const icon = button.querySelector('[data-theme-icon]');
+					if (icon) {
+						icon.classList.toggle('rotate-180', isDark);
+					}
 				});
-			});
+			};
 
-			userDropdownButton.addEventListener('click', (e) => {
-				e.stopPropagation();
-				toggleDropdown();
-			});
-
-			logoutButton.addEventListener('click', async () => {
-				closeDropdown();
-				await logout();
-				window.location.reload();
-			});
-
-			settingsButton.addEventListener('click', () => {
-				closeDropdown();
-				document.getElementById('settings-modal')?.dispatchEvent(new CustomEvent('open-settings'));
-			});
-
-			document.addEventListener('click', (e) => {
-				if (userDropdown && !userDropdown.contains(e.target)) closeDropdown();
-			});
-		}
-
-		modal?.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-		modalClose?.addEventListener('click', closeModal);
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && modal && !modal.classList.contains('invisible')) closeModal();
-		});
-
-		try {
-			storeTokenFromHash();
-			const hasToken = Boolean(getAuthToken());
-
-			if (hasToken) {
-				showUserDropdown();
-				applyUserToUi({
-					avatar: userAvatar?.src || fallbackAvatar,
-					username: userName?.textContent || 'User',
-				});
-			}
-
-			const user = await getCurrentUser();
-
-			if (user) {
-				showUserDropdown();
-				applyUserToUi(user);
-			} else {
-				showLoginButton();
-			}
-		} catch (error) {
-			console.error('Auth error:', error);
-			showLoginButton();
-		}
-
-		if (loginButton.dataset.authBound !== 'true') {
-			loginButton.dataset.authBound = 'true';
-			loginButton.addEventListener('click', openModal);
-		}
-	};
-
-	initAuthButton();
-	document.addEventListener('astro:page-load', initAuthButton);
-
-	const initThemeToggle = () => {
-		const buttons = Array.from(document.querySelectorAll('[id="theme-toggle"], [id="theme-toggle-mobile"]'));
-		if (!buttons.length) return;
-
-		const root = document.documentElement;
-		const storageKey = 'theme';
-		const applyStoredTheme = () => {
-			const stored = localStorage.getItem(storageKey);
-			const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-			const theme = stored === 'dark' || stored === 'light'
-				? stored
-				: (systemPrefersDark ? 'dark' : 'light');
-			root.classList.toggle('dark', theme === 'dark');
-			root.dataset.theme = theme;
-			// Route swaps restore the static head, so re-sync the browser chrome color.
-			if (typeof window.__syncThemeColor === 'function') window.__syncThemeColor(theme === 'dark');
-			return theme === 'dark';
-		};
-
-		const updateAria = () => {
-			const isDark = root.classList.contains('dark');
 			buttons.forEach((button) => {
-				button.setAttribute('aria-pressed', String(isDark));
-				const icon = button.querySelector('[data-theme-icon]');
-				if (icon) {
-					icon.classList.toggle('rotate-180', isDark);
+				if (button.dataset.bound === 'true') return;
+				button.dataset.bound = 'true';
+				button.addEventListener('click', (event) => {
+					const applyTheme = () => {
+						const isDark = root.classList.toggle('dark');
+						root.dataset.theme = isDark ? 'dark' : 'light';
+						localStorage.setItem(storageKey, isDark ? 'dark' : 'light');
+						if (typeof win.__syncThemeColor === 'function') win.__syncThemeColor(isDark);
+						updateAria();
+					};
+
+					const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+					const doc = document as Document & {
+						startViewTransition?: (cb: () => void) => { ready: Promise<void>; finished: Promise<void> };
+					};
+					if (typeof doc.startViewTransition !== 'function' || reducedMotion) {
+						applyTheme();
+						return;
+					}
+
+					const rect = button.getBoundingClientRect();
+					const x = event.clientX || rect.left + rect.width / 2;
+					const y = event.clientY || rect.top + rect.height / 2;
+					const endRadius = Math.hypot(
+						Math.max(x, window.innerWidth - x),
+						Math.max(y, window.innerHeight - y)
+					);
+
+					root.classList.add('theme-vt');
+					const transition = doc.startViewTransition(applyTheme);
+					transition.ready
+						.then(() => {
+							document.documentElement.animate(
+								{
+									clipPath: [
+										`circle(0px at ${x}px ${y}px)`,
+										`circle(${endRadius}px at ${x}px ${y}px)`,
+									],
+								},
+								{
+									duration: 500,
+									easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
+									pseudoElement: '::view-transition-new(root)',
+								}
+							);
+						})
+						.catch(() => {});
+					transition.finished
+						.catch(() => {})
+						.finally(() => root.classList.remove('theme-vt'));
+				});
+			});
+
+			applyStoredTheme();
+			updateAria();
+		};
+
+		// Keep aria-expanded synced with native Popover state, plus coordinate fallback
+		// only on browsers without CSS Anchor Positioning.
+		const initRssPopover = () => {
+			const rssButton = document.getElementById('rss-button');
+			const rssMenu = document.getElementById('rss-menu');
+			if (!rssButton || !rssMenu || rssMenu.dataset.popoverBound === 'true') return;
+			rssMenu.dataset.popoverBound = 'true';
+
+			const supportsAnchor =
+				typeof CSS !== 'undefined' && typeof CSS.supports === 'function' && CSS.supports('anchor-name', '--a');
+
+			rssMenu.addEventListener('beforetoggle', (event: any) => {
+				if (event.newState === 'open' && !supportsAnchor) {
+					const rect = rssButton.getBoundingClientRect();
+					rssMenu.style.position = 'fixed';
+					rssMenu.style.top = `${Math.round(rect.bottom + 8)}px`;
+					rssMenu.style.right = `${Math.max(8, Math.round(window.innerWidth - rect.right))}px`;
 				}
+			});
+
+			rssMenu.addEventListener('toggle', (event: any) => {
+				rssButton.setAttribute('aria-expanded', String(event.newState === 'open'));
 			});
 		};
 
-		buttons.forEach((button) => {
-			if (button.dataset.bound === 'true') return;
-			button.dataset.bound = 'true';
-			button.addEventListener('click', (event) => {
-				const applyTheme = () => {
-					const isDark = root.classList.toggle('dark');
-					root.dataset.theme = isDark ? 'dark' : 'light';
-					localStorage.setItem(storageKey, isDark ? 'dark' : 'light');
-					if (typeof window.__syncThemeColor === 'function') window.__syncThemeColor(isDark);
-					updateAria();
-				};
-
-				const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-				if (typeof document.startViewTransition !== 'function' || reducedMotion) {
-					applyTheme();
-					return;
-				}
-
-				// Expand the new theme as a circle from the click point for a tactile switch feel.
-				const rect = button.getBoundingClientRect();
-				const x = event.clientX || rect.left + rect.width / 2;
-				const y = event.clientY || rect.top + rect.height / 2;
-				const endRadius = Math.hypot(
-					Math.max(x, window.innerWidth - x),
-					Math.max(y, window.innerHeight - y)
-				);
-
-				root.classList.add('theme-vt');
-				const transition = document.startViewTransition(applyTheme);
-				transition.ready
-					.then(() => {
-						document.documentElement.animate(
-							{
-								clipPath: [
-									`circle(0px at ${x}px ${y}px)`,
-									`circle(${endRadius}px at ${x}px ${y}px)`,
-								],
-							},
-							{
-								duration: 500,
-								easing: 'cubic-bezier(0.22, 1, 0.36, 1)',
-								pseudoElement: '::view-transition-new(root)',
-							}
-						);
-					})
-					.catch(() => {});
-				transition.finished
-					.catch(() => {})
-					.finally(() => root.classList.remove('theme-vt'));
-			});
-		});
-
-		applyStoredTheme();
-		updateAria();
-	};
-
-	initThemeToggle();
-	// Rebind on client-side navigation because header can be re-rendered by View Transitions.
-	document.addEventListener('astro:page-load', initThemeToggle);
-	document.addEventListener('astro:after-swap', initThemeToggle);
-
-	// RSS Dropdown
-	const initRssDropdown = () => {
-		const rssDropdown = document.getElementById('rss-dropdown');
-		const rssButton = document.getElementById('rss-button');
-		const rssMenu = document.getElementById('rss-menu');
-
-		if (!rssDropdown || !rssButton || !rssMenu) return;
-
-		// Prevent double binding
-		if (rssButton.dataset.rssBound === 'true') return;
-		rssButton.dataset.rssBound = 'true';
-
-		const toggleDropdown = (e) => {
-			e.stopPropagation();
-			const isExpanded = rssButton.getAttribute('aria-expanded') === 'true';
-			rssButton.setAttribute('aria-expanded', String(!isExpanded));
-			if (isExpanded) {
-				rssMenu.classList.add('hidden');
-			} else {
-				rssMenu.classList.remove('hidden');
-			}
+		const bootHeader = () => {
+			initThemeToggle();
+			initRssPopover();
 		};
 
-		const closeDropdown = () => {
-			rssButton.setAttribute('aria-expanded', 'false');
-			rssMenu.classList.add('hidden');
-		};
-
-		// Click to toggle on all devices (mobile-friendly)
-		rssButton.addEventListener('click', toggleDropdown);
-
-		// Close when clicking outside
-		document.addEventListener('click', (e) => {
-			if (!rssDropdown.contains(e.target)) {
-				closeDropdown();
-			}
-		});
-
-		// Close on Escape
-		document.addEventListener('keydown', (e) => {
-			if (e.key === 'Escape' && !rssMenu.classList.contains('hidden')) {
-				closeDropdown();
-			}
-		});
-	};
-
-	initRssDropdown();
-	document.addEventListener('astro:page-load', initRssDropdown);
-	document.addEventListener('astro:after-swap', initRssDropdown);
+		if (!win.__headerBound) {
+			win.__headerBound = true;
+			document.addEventListener('astro:page-load', bootHeader);
+			document.addEventListener('astro:after-swap', bootHeader);
+		}
+		bootHeader();
+	})();
 </script>

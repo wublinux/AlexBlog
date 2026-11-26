@@ -30,9 +30,7 @@ const { eyebrow, title, accent, subtitle } = Astro.props as Props;
 				</p>
 			)}
 			<h1
-				class="flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[2.1rem] font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-100 md:text-[2.85rem]"
-				transition:name="page-title"
-				transition:animate="fade"
+				class="vt-page-title flex flex-wrap items-baseline gap-x-2.5 gap-y-1 text-[2.1rem] font-semibold leading-none tracking-tight text-zinc-900 dark:text-zinc-100 md:text-[2.85rem]"
 			>
 				<span class="font-sans">{title}</span>
 				{accent && (

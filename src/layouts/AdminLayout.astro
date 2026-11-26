@@ -21,7 +21,7 @@ const { title, active = 'none', hideNav = false } = Astro.props;
 		<meta name="referrer" content="same-origin" />
 		<title>{title} | AlexBlog CMS</title>
 	</head>
-	<body class="admin-body">
+	<body class="admin-body" data-pagefind-ignore>
 		{
 			!hideNav && (
 				<header class="admin-topbar">

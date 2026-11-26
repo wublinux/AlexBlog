@@ -7,9 +7,9 @@ export default {
 	theme: {
 		extend: {
 			fontFamily: {
-				sans: ['"Alibaba PuHuiTi"', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
-				serif: ['"Source Han Serif SC"', '"Noto Serif SC"', '"Songti SC"', 'serif'],
-				mono: ['"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+				sans: ['"Alibaba PuHuiTi"', 'var(--font-inter)', 'Inter', 'system-ui', '-apple-system', 'Segoe UI', 'sans-serif'],
+				serif: ['"Source Han Serif SC"', '"Noto Serif CJK SC"', '"Songti SC"', '"STSong"', '"Alibaba PuHuiTi"', 'Georgia', 'serif'],
+				mono: ['var(--font-jetbrains-mono)', '"JetBrains Mono"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
 			},
 		},
 	},
