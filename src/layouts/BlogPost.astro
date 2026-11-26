@@ -925,7 +925,11 @@ const articleJsonLd =
 				if (window.__activePostViewsSlug === slug) return;
 				window.__activePostViewsSlug = slug;
 
-				const apiBase = window.__API_BASE || '';
+				const apiBase = win.__API_BASE || '';
+				if (!apiBase) {
+					output.textContent = '0 views';
+					return;
+				}
 				const sessionKey = `blog_viewed:${slug}`;
 				const hasViewedInSession = (() => {
 					try {
@@ -973,7 +977,15 @@ const articleJsonLd =
 				const roots = Array.from(document.querySelectorAll('[data-related-post-views-root]'));
 				if (!roots.length) return;
 
-				const apiBase = window.__API_BASE || '';
+				const apiBase = win.__API_BASE || '';
+				if (!apiBase) {
+					roots.forEach((root) => {
+						root.querySelectorAll('[data-related-post-views]').forEach((node) => {
+							node.textContent = '0';
+						});
+					});
+					return;
+				}
 				const uniqueKeys = [...new Set(
 					roots
 						.map((root) => root.getAttribute('data-related-post-views-root') || '')

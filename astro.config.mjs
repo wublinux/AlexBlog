@@ -122,6 +122,11 @@ export default defineConfig({
 	base: runtimeBase,
 	trailingSlash: 'always',
 	output: 'static',
+	build: {
+		// Keep component stylesheets external under /_astro/*.css so ClientRouter swaps
+		// never inject new inline <style> blocks that violate the initial page's strict CSP.
+		inlineStylesheets: 'never',
+	},
 	fonts: [
 		{
 			provider: fontProviders.google(),
@@ -209,5 +214,10 @@ export default defineConfig({
 	},
 	vite: {
 		plugins: [tailwindcss()],
+		build: {
+			// Keep bundled Astro <script> modules external under /_astro/*.js so ClientRouter
+			// never injects data:application/javascript shims or unhashed inline modules under CSP.
+			assetsInlineLimit: 0,
+		},
 	},
 });

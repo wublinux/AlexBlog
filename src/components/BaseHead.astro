@@ -170,10 +170,15 @@ Astro.csp?.insertScriptHash(sha256Hash(SPECULATION_RULES_JSON));
 {serializedJsonLd && <script type="application/ld+json" set:html={serializedJsonLd} />}
 
 <!-- Conservative Speculation Rules for near-instant internal navigation (excludes /admin and /api). -->
-<script type="speculationrules" is:inline set:html={SPECULATION_RULES_JSON} />
+<script
+	type="speculationrules"
+	is:inline
+	data-astro-transition-persist="speculation-rules"
+	set:html={SPECULATION_RULES_JSON}
+/>
 
 <!-- Apply theme before first paint to prevent light/dark flash (SHA-256 registered in Astro CSP). -->
-<script is:inline set:html={THEME_INIT_SCRIPT} />
+<script is:inline data-astro-transition-persist="theme-init" set:html={THEME_INIT_SCRIPT} />
 
 <script>
 	(() => {

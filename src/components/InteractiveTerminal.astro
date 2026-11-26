@@ -138,7 +138,10 @@ const encodedQuotes = encodeURIComponent(JSON.stringify(quotes));
 				scrollArea.scrollTop = scrollArea.scrollHeight;
 			};
 
+			let typingToken = 0;
+
 			const typeText = async (value: string) => {
+				const token = ++typingToken;
 				textEl.textContent = '';
 				if (reducedMotion) {
 					textEl.textContent = value;
@@ -146,6 +149,7 @@ const encodedQuotes = encodeURIComponent(JSON.stringify(quotes));
 					return;
 				}
 				for (let i = 1; i <= value.length; i++) {
+					if (token !== typingToken) return;
 					textEl.textContent = value.slice(0, i);
 					scrollBottom();
 					await sleep(15 + Math.random() * 15);
@@ -216,12 +220,14 @@ const encodedQuotes = encodeURIComponent(JSON.stringify(quotes));
 
 				const lower = raw.toLowerCase();
 				if (lower === 'clear') {
+					typingToken++;
 					scrollArea.querySelectorAll('p:not([data-terminal-line])').forEach((l) => l.remove());
 					textEl.textContent = '';
 					return;
 				}
 
 				if (lower === 'search' || lower.startsWith('search ')) {
+					typingToken++;
 					await handleSearch(raw.slice(6).trim());
 					scrollBottom();
 					return;
@@ -260,7 +266,9 @@ const encodedQuotes = encodeURIComponent(JSON.stringify(quotes));
 			});
 
 			window.setTimeout(() => {
-				void typeText(getRandomQuote());
+				if (typingToken === 0) {
+					void typeText(getRandomQuote());
+				}
 			}, 800);
 		};
 
