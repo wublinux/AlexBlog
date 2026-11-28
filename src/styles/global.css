@@ -1628,7 +1628,7 @@ html.theme-vt::view-transition-new(root) {
 
 @keyframes hero-kenburns {
 	from {
-		transform: scale(1.055);
+		transform: scale(1.03);
 	}
 	to {
 		transform: scale(1);

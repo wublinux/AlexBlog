@@ -45,7 +45,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 					data-hero-wallpaper-root
 					data-wallpaper-api={WALLPAPER_API_URL}
 				>
-					<div class="relative h-[44vh] min-h-[300px] w-full overflow-hidden">
+					<div class="relative aspect-[16/9] w-full overflow-hidden">
 						<div data-parallax class="hero-kenburns relative h-full w-full will-change-transform">
 							<img
 								src={HOME_WALLPAPER}
@@ -55,7 +55,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 								loading="eager"
 								fetchpriority="high"
 								data-hero-base-img
-								class="h-full w-full object-cover object-[62%_center] md:object-center"
+								class="h-full w-full object-cover object-center"
 							/>
 							<img
 								alt=""
@@ -65,7 +65,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 								referrerpolicy="no-referrer"
 								aria-hidden="true"
 								data-hero-layer="0"
-								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-[50%_28%]"
 							/>
 							<img
 								alt=""
@@ -75,14 +75,14 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 								referrerpolicy="no-referrer"
 								aria-hidden="true"
 								data-hero-layer="1"
-								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-[50%_28%]"
 							/>
 						</div>
 						<div class="pointer-events-none absolute inset-0 bg-zinc-900/10 dark:bg-zinc-950/25"></div>
 						<div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/40 to-transparent"></div>
 						<div
 							data-hero-wallpaper-hud
-							class="absolute bottom-3 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] items-center gap-1 rounded-full border border-white/15 bg-zinc-950/50 px-2 py-1 text-[11px] font-medium text-white/90 shadow-lg backdrop-blur-md transition-opacity duration-200 opacity-85 hover:opacity-100"
+							class="absolute bottom-2.5 right-2.5 z-10 hidden max-w-[calc(100%-1.25rem)] items-center gap-1 rounded-full border border-white/15 bg-zinc-950/50 px-2 py-1 text-[11px] font-medium text-white/90 shadow-lg backdrop-blur-md transition-opacity duration-200 opacity-85 hover:opacity-100 sm:bottom-3 sm:right-3"
 						>
 							<a
 								data-hero-wallpaper-source
@@ -94,6 +94,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 							>
 								<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-300" aria-hidden="true"></span>
 								<span data-hero-wallpaper-label class="truncate">二次元热榜</span>
+								<span data-hero-wallpaper-res class="hidden shrink-0 opacity-75 sm:inline"></span>
 							</a>
 							<span class="h-3 w-px shrink-0 bg-white/20" aria-hidden="true"></span>
 							<button
@@ -318,11 +319,12 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 						requestAnimationFrame(() => {
 							const rect = img.getBoundingClientRect();
 							const viewH = window.innerHeight;
-							// Only apply when hero is in viewport
+							// Only apply when hero is in viewport; bound travel within 3% scale bleed so edges never gap.
 							if (rect.bottom > 0 && rect.top < viewH) {
 								const progress = (viewH - rect.top) / (viewH + rect.height);
-								const offset = (progress - 0.5) * 40; // -20px to +20px
-								img.style.transform = `translateY(${offset}px) scale(1.05)`;
+								const maxTravel = Math.min(20, rect.height * 0.024);
+								const offset = (progress - 0.5) * maxTravel;
+								img.style.transform = `translateY(${offset.toFixed(2)}px) scale(1.03)`;
 							}
 							ticking = false;
 						});
@@ -472,6 +474,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 					const hud = root.querySelector<HTMLElement>('[data-hero-wallpaper-hud]');
 					const sourceLink = root.querySelector<HTMLAnchorElement>('[data-hero-wallpaper-source]');
 					const labelEl = root.querySelector<HTMLElement>('[data-hero-wallpaper-label]');
+					const resEl = root.querySelector<HTMLElement>('[data-hero-wallpaper-res]');
 					const nextBtn = root.querySelector<HTMLButtonElement>('[data-hero-wallpaper-next]');
 					const toggleBtn = root.querySelector<HTMLButtonElement>('[data-hero-wallpaper-toggle]');
 					if (!apiUrl || !layer0 || !layer1 || !hud || !sourceLink || !labelEl || !nextBtn || !toggleBtn) {
@@ -507,6 +510,7 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 							const slotInfo = computeSlot(payload.items.length);
 							const nextClock = formatNextTime(slotInfo.nextChangeAt);
 							labelEl.textContent = '默认封面';
+							if (resEl) resEl.textContent = '';
 							sourceLink.href = 'https://wallhaven.cc/';
 							sourceLink.title = nextClock
 								? `已固定默认封面 · 热榜每 4 小时轮换（下档 ${nextClock}）`
@@ -556,7 +560,8 @@ const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 
 							const slotInfo = computeSlot(count);
 							const nextClock = formatNextTime(slotInfo.nextChangeAt);
-							labelEl.textContent = `热榜 #${item.rank} · ${item.resolution.replace('x', '×')}`;
+							labelEl.textContent = `热榜 #${item.rank}`;
+							if (resEl) resEl.textContent = `· ${item.resolution.replace('x', '×')}`;
 							sourceLink.href = pageUrl;
 							sourceLink.title = nextClock
 								? `Wallhaven 纯二次元热榜（${isManual ? '手动切换，' : ''}下次自动轮换 ${nextClock}）`
