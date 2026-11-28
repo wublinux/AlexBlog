@@ -119,6 +119,14 @@ AI 短评帮助读者快速判断是否值得进一步了解。
 - [x] 使用工作流并发锁取消落后的生产发布任务
 - [x] 禁止从脏工作树、分离 HEAD 或落后提交直接上传 Pages 生产版本
 
+### Task 11：首页二次元热榜壁纸轮换（每 4 小时）
+
+- [x] 新增公开只读 `/api/wallpaper` 接口（GET/HEAD，无宽松 CORS，ETag + 按 4 小时边界收敛的 Cache-Control）
+- [x] 复用现有 Cron（01:00 / 08:00 UTC）故障隔离地刷新 Wallhaven 纯二次元 SFW 横图热榜池并写入 KV（`wallpaper:latest:v1`）
+- [x] 严格校验 `w.wallhaven.cc` 域名、16:9/16:10 比例、≥1920×1080 分辨率与文件体积上限（优先 ≤5 MB，最高 8 MB）
+- [x] 首页 Hero 渐进增强：默认先渲染本地封面，预加载完成后平滑淡入当前 4 小时档位热榜壁纸，支持“换一张 / 默认”切换与自动跨档轮换
+- [x] CSP `img-src` 最小范围放行 `https://w.wallhaven.cc`
+
 ## 仍需一次性云端配置
 
 以下步骤需要 Cloudflare 与 GitHub 账号权限，不能在仓库中预填：

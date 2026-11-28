@@ -7,13 +7,16 @@ These rules apply to `workers/cms-api` and supplement the repository-level
 
 - Worker name: `alexblog-cms-api`.
 - Production routes: `letsgogogogogo.pp.ua/admin/api/*` and the exact public
-  read-only route `letsgogogogogo.pp.ua/api/github-daily`.
+  read-only routes `letsgogogogogo.pp.ua/api/github-daily` and
+  `letsgogogogogo.pp.ua/api/wallpaper`.
 - Public origin: `https://letsgogogogogo.pp.ua`.
 - GitHub target: `wublinux/AlexBlog`, branch `V2.0.0`.
 - Allowed write roots: `src/content/blog` and `public/image`.
 - KV bindings: `SESSIONS` stores short-lived OAuth state and authenticated
-  sessions only; `GITHUB_DAILY` stores only the latest public ranking snapshot.
-- The Workers AI binding is `AI`; GitHub Daily refreshes at 01:00 and 08:00 UTC.
+  sessions only; `GITHUB_DAILY` stores only public feed snapshots
+  (`github-daily:latest:v1` and `wallpaper:latest:v1`).
+- The Workers AI binding is `AI`; scheduled refreshes run at 01:00 and 08:00 UTC
+  with isolated fault handling for GitHub Daily and Wallhaven anime wallpapers.
 
 Changing any item above requires explicit user authorization and a coordinated
 update to OAuth, Wrangler configuration, tests, documentation, and production
@@ -47,8 +50,9 @@ Agent guidance for this class of bug: skill `acceptance-bounded-output`.
 ## API invariants
 
 - `/admin/api/health` is the only unauthenticated CMS data route.
-- `/api/github-daily` is the only public data exception. Keep it GET/HEAD-only,
-  omit permissive CORS, and never return README source text.
+- `/api/github-daily` and `/api/wallpaper` are the only public data exceptions.
+  Keep both GET/HEAD-only, omit permissive CORS, validate all image URLs to
+  `w.wallhaven.cc` SFW anime assets, and never return README source text.
 - Keep all other routing under `/admin/api/*`; do not add wildcard proxy behavior.
 - Run `requireSameOrigin` before routing protected APIs. Do not add permissive
   CORS or accept cross-origin mutations.

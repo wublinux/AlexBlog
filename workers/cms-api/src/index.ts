@@ -4,6 +4,10 @@ import {
   handleGitHubDailyRequest,
   refreshGitHubDaily,
 } from './lib/github-daily';
+import {
+  handleWallpaperRequest,
+  refreshWallpaperPool,
+} from './lib/wallpaper';
 import { handleAuth } from './routes/auth';
 import { handleDeploy } from './routes/deploy';
 import { handleMedia } from './routes/media';
@@ -17,6 +21,14 @@ export default {
     if (pathname === '/api/github-daily') {
       try {
         return await handleGitHubDailyRequest(request, env);
+      } catch (error) {
+        return errorResponse(error);
+      }
+    }
+
+    if (pathname === '/api/wallpaper') {
+      try {
+        return await handleWallpaperRequest(request, env);
       } catch (error) {
         return errorResponse(error);
       }
@@ -60,8 +72,16 @@ export default {
     }
   },
   async scheduled(controller: ScheduledController, env: CmsEnv): Promise<void> {
-    try {
-      const snapshot = await refreshGitHubDaily(env, new Date(controller.scheduledTime));
+    const scheduledNow = new Date(controller.scheduledTime);
+    const [dailyResult, wallpaperResult] = await Promise.allSettled([
+      refreshGitHubDaily(env, scheduledNow),
+      refreshWallpaperPool(env, scheduledNow),
+    ]);
+
+    const errors: string[] = [];
+
+    if (dailyResult.status === 'fulfilled') {
+      const snapshot = dailyResult.value;
       console.log(
         JSON.stringify({
           event: 'github_daily_refresh_complete',
@@ -70,14 +90,43 @@ export default {
           aiReviewCount: snapshot.items.filter((item) => item.review.source === 'ai').length,
         }),
       );
-    } catch (error) {
+    } else {
+      const message =
+        dailyResult.reason instanceof Error ? dailyResult.reason.message : 'unknown_error';
       console.error(
         JSON.stringify({
           event: 'github_daily_refresh_failed',
-          error: error instanceof Error ? error.message : 'unknown_error',
+          error: message,
         }),
       );
-      throw error;
+      errors.push(`github_daily: ${message}`);
+    }
+
+    if (wallpaperResult.status === 'fulfilled') {
+      const snapshot = wallpaperResult.value;
+      console.log(
+        JSON.stringify({
+          event: 'wallpaper_refresh_complete',
+          generatedAt: snapshot.generatedAt,
+          itemCount: snapshot.items.length,
+        }),
+      );
+    } else {
+      const message =
+        wallpaperResult.reason instanceof Error
+          ? wallpaperResult.reason.message
+          : 'unknown_error';
+      console.error(
+        JSON.stringify({
+          event: 'wallpaper_refresh_failed',
+          error: message,
+        }),
+      );
+      errors.push(`wallpaper: ${message}`);
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Scheduled refresh failed (${errors.join('; ')})`);
     }
   },
 } satisfies ExportedHandler<CmsEnv>;

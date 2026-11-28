@@ -21,6 +21,7 @@ const posts = (await getCollection('blog'))
 	.slice(0, 6);
 
 const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
+const WALLPAPER_API_URL = `${BASE}api/wallpaper`;
 ---
 
 <!doctype html>
@@ -39,20 +40,79 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 		<MobileDrawer />
 		<main class="vt-page-main page-shell page-fade-in py-10 md:py-14">
 			<div class="space-y-6">
-				<section class="hero-enter overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900">
+				<section
+					class="hero-enter overflow-hidden rounded-2xl border border-zinc-200 bg-white dark:border-zinc-700 dark:bg-zinc-900"
+					data-hero-wallpaper-root
+					data-wallpaper-api={WALLPAPER_API_URL}
+				>
 					<div class="relative h-[44vh] min-h-[300px] w-full overflow-hidden">
-						<img
-							src={HOME_WALLPAPER}
-							alt="日系春日房间、樱花与二次元人物组成的博客主视觉"
-							width="1600"
-							height="900"
-							loading="eager"
-							fetchpriority="high"
-							data-parallax
-							class="hero-kenburns h-full w-full object-cover object-[62%_center] md:object-center will-change-transform"
-						/>
-						<div class="absolute inset-0 bg-zinc-900/10 dark:bg-zinc-950/25"></div>
-						<div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/35 to-transparent"></div>
+						<div data-parallax class="hero-kenburns relative h-full w-full will-change-transform">
+							<img
+								src={HOME_WALLPAPER}
+								alt="日系春日房间、樱花与二次元人物组成的博客主视觉"
+								width="1600"
+								height="900"
+								loading="eager"
+								fetchpriority="high"
+								data-hero-base-img
+								class="h-full w-full object-cover object-[62%_center] md:object-center"
+							/>
+							<img
+								alt=""
+								width="1600"
+								height="900"
+								decoding="async"
+								referrerpolicy="no-referrer"
+								aria-hidden="true"
+								data-hero-layer="0"
+								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+							/>
+							<img
+								alt=""
+								width="1600"
+								height="900"
+								decoding="async"
+								referrerpolicy="no-referrer"
+								aria-hidden="true"
+								data-hero-layer="1"
+								class="hero-wallpaper-layer pointer-events-none absolute inset-0 h-full w-full object-cover object-center"
+							/>
+						</div>
+						<div class="pointer-events-none absolute inset-0 bg-zinc-900/10 dark:bg-zinc-950/25"></div>
+						<div class="pointer-events-none absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-zinc-950/40 to-transparent"></div>
+						<div
+							data-hero-wallpaper-hud
+							class="absolute bottom-3 right-3 z-10 hidden max-w-[calc(100%-1.5rem)] items-center gap-1 rounded-full border border-white/15 bg-zinc-950/50 px-2 py-1 text-[11px] font-medium text-white/90 shadow-lg backdrop-blur-md transition-opacity duration-200 opacity-85 hover:opacity-100"
+						>
+							<a
+								data-hero-wallpaper-source
+								href="https://wallhaven.cc/"
+								target="_blank"
+								rel="noopener noreferrer"
+								class="inline-flex min-w-0 items-center gap-1.5 rounded-full px-2 py-0.5 text-white/90 no-underline transition-colors hover:bg-white/15 hover:text-white"
+								title="Wallhaven 纯二次元热榜 · 每 4 小时自动轮换"
+							>
+								<span class="h-1.5 w-1.5 shrink-0 rounded-full bg-rose-300" aria-hidden="true"></span>
+								<span data-hero-wallpaper-label class="truncate">二次元热榜</span>
+							</a>
+							<span class="h-3 w-px shrink-0 bg-white/20" aria-hidden="true"></span>
+							<button
+								type="button"
+								data-hero-wallpaper-next
+								class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-white/90 transition-colors hover:bg-white/15 hover:text-white disabled:opacity-50"
+								title="切换下一张二次元热榜壁纸"
+							>
+								换一张
+							</button>
+							<button
+								type="button"
+								data-hero-wallpaper-toggle
+								class="inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-white/80 transition-colors hover:bg-white/15 hover:text-white"
+								title="切换默认封面与 4 小时热榜轮换"
+							>
+								默认
+							</button>
+						</div>
 					</div>
 				</section>
 
@@ -276,7 +336,7 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 						img.style.transform = '';
 					};
 
-					document.addEventListener('astro:before-swap', cleanup);
+					document.addEventListener('astro:before-swap', cleanup, { once: true });
 				};
 
 				window.__parallaxInit = initParallax;
@@ -287,6 +347,359 @@ const HOME_WALLPAPER = `${BASE}image/home-hero-anime.webp`;
 					});
 				}
 				initParallax();
+			})();
+		</script>
+
+		<script>
+			(() => {
+				type WallpaperItem = {
+					rank: number;
+					id: string;
+					imageUrl: string;
+					pageUrl: string;
+					resolution: string;
+					favorites: number;
+				};
+
+				type WallpaperPayload = {
+					rotationHours: number;
+					slot: number;
+					activeIndex: number;
+					nextChangeAt: string;
+					active: WallpaperItem;
+					items: WallpaperItem[];
+				};
+
+				type WallpaperPref =
+					| { mode: 'auto' }
+					| { mode: 'default' }
+					| { mode: 'manual'; slot: number; index: number };
+
+				const PREF_KEY = 'alexblog:hero-wallpaper-pref:v1';
+				const ROTATION_MS = 4 * 60 * 60 * 1_000;
+				const CACHE_TTL_MS = 5 * 60 * 1_000;
+				const win = window as any;
+
+				const safeWallhavenUrl = (value: unknown, expectedHost: 'w.wallhaven.cc' | 'wallhaven.cc') => {
+					if (typeof value !== 'string') return null;
+					try {
+						const parsed = new URL(value);
+						if (parsed.protocol !== 'https:' || parsed.hostname !== expectedHost) return null;
+						return parsed.href;
+					} catch {
+						return null;
+					}
+				};
+
+				const readPref = (): WallpaperPref => {
+					try {
+						const raw = localStorage.getItem(PREF_KEY);
+						if (!raw) return { mode: 'auto' };
+						const parsed = JSON.parse(raw) as Partial<WallpaperPref>;
+						if (parsed.mode === 'default') return { mode: 'default' };
+						if (
+							parsed.mode === 'manual' &&
+							typeof parsed.slot === 'number' &&
+							Number.isInteger(parsed.slot) &&
+							typeof parsed.index === 'number' &&
+							Number.isInteger(parsed.index) &&
+							parsed.index >= 0
+						) {
+							return { mode: 'manual', slot: parsed.slot, index: parsed.index };
+						}
+					} catch {
+						// Ignore storage unavailability
+					}
+					return { mode: 'auto' };
+				};
+
+				const writePref = (pref: WallpaperPref) => {
+					try {
+						if (pref.mode === 'auto') localStorage.removeItem(PREF_KEY);
+						else localStorage.setItem(PREF_KEY, JSON.stringify(pref));
+					} catch {
+						// Ignore storage unavailability
+					}
+				};
+
+				const formatNextTime = (iso: string) => {
+					const date = new Date(iso);
+					if (!Number.isFinite(date.getTime())) return '';
+					return new Intl.DateTimeFormat('zh-CN', {
+						hour: '2-digit',
+						minute: '2-digit',
+						hour12: false,
+					}).format(date);
+				};
+
+				const computeSlot = (count: number) => {
+					const now = Date.now();
+					const slot = Math.floor(now / ROTATION_MS);
+					const activeIndex = ((slot % count) + count) % count;
+					const nextChangeMs = (slot + 1) * ROTATION_MS;
+					return {
+						slot,
+						activeIndex,
+						nextChangeMs,
+						nextChangeAt: new Date(nextChangeMs).toISOString(),
+					};
+				};
+
+				const preloadImage = (url: string) =>
+					new Promise<void>((resolve, reject) => {
+						const loader = new Image();
+						loader.referrerPolicy = 'no-referrer';
+						loader.decoding = 'async';
+						loader.onload = () => {
+							if (typeof loader.decode === 'function') {
+								loader.decode().then(resolve, resolve);
+							} else {
+								resolve();
+							}
+						};
+						loader.onerror = () => reject(new Error('wallpaper_load_failed'));
+						loader.src = url;
+					});
+
+				const initHeroWallpaper = () => {
+					const root = document.querySelector<HTMLElement>('[data-hero-wallpaper-root]');
+					if (!root || root.dataset.bound === 'true') return;
+					root.dataset.bound = 'true';
+
+					const apiUrl = root.dataset.wallpaperApi;
+					const layer0 = root.querySelector<HTMLImageElement>('[data-hero-layer="0"]');
+					const layer1 = root.querySelector<HTMLImageElement>('[data-hero-layer="1"]');
+					const hud = root.querySelector<HTMLElement>('[data-hero-wallpaper-hud]');
+					const sourceLink = root.querySelector<HTMLAnchorElement>('[data-hero-wallpaper-source]');
+					const labelEl = root.querySelector<HTMLElement>('[data-hero-wallpaper-label]');
+					const nextBtn = root.querySelector<HTMLButtonElement>('[data-hero-wallpaper-next]');
+					const toggleBtn = root.querySelector<HTMLButtonElement>('[data-hero-wallpaper-toggle]');
+					if (!apiUrl || !layer0 || !layer1 || !hud || !sourceLink || !labelEl || !nextBtn || !toggleBtn) {
+						return;
+					}
+
+					const layers = [layer0, layer1];
+					let activeLayer = -1;
+					let payload: WallpaperPayload | null = null;
+					let currentIndex = -1;
+					let showingDefault = true;
+					let renderToken = 0;
+					let destroyed = false;
+					let rotationTimer: number | null = null;
+					const abortController = new AbortController();
+
+					const clearRotationTimer = () => {
+						if (rotationTimer !== null) {
+							window.clearTimeout(rotationTimer);
+							rotationTimer = null;
+						}
+					};
+
+					const showDefaultLayer = () => {
+						renderToken += 1;
+						showingDefault = true;
+						activeLayer = -1;
+						for (const layer of layers) {
+							layer.classList.remove('is-visible');
+							layer.setAttribute('aria-hidden', 'true');
+						}
+						if (payload) {
+							const slotInfo = computeSlot(payload.items.length);
+							const nextClock = formatNextTime(slotInfo.nextChangeAt);
+							labelEl.textContent = '默认封面';
+							sourceLink.href = 'https://wallhaven.cc/';
+							sourceLink.title = nextClock
+								? `已固定默认封面 · 热榜每 4 小时轮换（下档 ${nextClock}）`
+								: '已固定默认封面';
+							toggleBtn.textContent = '热榜';
+							toggleBtn.title = '恢复每 4 小时二次元热榜自动轮换';
+						}
+					};
+
+					const showWallpaperAt = async (index: number, isManual = false): Promise<boolean> => {
+						if (!payload || !payload.items.length || destroyed) return false;
+						const count = payload.items.length;
+						const safeIndex = ((index % count) + count) % count;
+						const item = payload.items[safeIndex];
+						if (!item) return false;
+
+						const imageUrl = safeWallhavenUrl(item.imageUrl, 'w.wallhaven.cc');
+						const pageUrl = safeWallhavenUrl(item.pageUrl, 'wallhaven.cc');
+						if (!imageUrl || !pageUrl) return false;
+
+						const token = ++renderToken;
+						nextBtn.disabled = true;
+						try {
+							await preloadImage(imageUrl);
+							if (destroyed || token !== renderToken) return false;
+
+							const targetIdx = activeLayer === 0 ? 1 : 0;
+							const targetLayer = layers[targetIdx];
+							const prevLayer = activeLayer >= 0 ? layers[activeLayer] : null;
+
+							targetLayer.src = imageUrl;
+							targetLayer.alt = `Wallhaven 二次元热榜壁纸 #${item.rank} (${item.resolution})`;
+							targetLayer.removeAttribute('aria-hidden');
+
+							requestAnimationFrame(() => {
+								if (destroyed || token !== renderToken) return;
+								targetLayer.classList.add('is-visible');
+								if (prevLayer && prevLayer !== targetLayer) {
+									prevLayer.classList.remove('is-visible');
+									prevLayer.setAttribute('aria-hidden', 'true');
+								}
+							});
+
+							activeLayer = targetIdx;
+							currentIndex = safeIndex;
+							showingDefault = false;
+
+							const slotInfo = computeSlot(count);
+							const nextClock = formatNextTime(slotInfo.nextChangeAt);
+							labelEl.textContent = `热榜 #${item.rank} · ${item.resolution.replace('x', '×')}`;
+							sourceLink.href = pageUrl;
+							sourceLink.title = nextClock
+								? `Wallhaven 纯二次元热榜（${isManual ? '手动切换，' : ''}下次自动轮换 ${nextClock}）`
+								: 'Wallhaven 纯二次元热榜 · 点击查看原图';
+							toggleBtn.textContent = '默认';
+							toggleBtn.title = '切回默认静态封面';
+							return true;
+						} catch {
+							return false;
+						} finally {
+							if (!destroyed && token === renderToken) {
+								nextBtn.disabled = false;
+							}
+						}
+					};
+
+					const scheduleNextSlot = () => {
+						clearRotationTimer();
+						if (!payload || !payload.items.length || destroyed) return;
+						const slotInfo = computeSlot(payload.items.length);
+						const delayMs = Math.max(1_000, Math.min(slotInfo.nextChangeMs - Date.now() + 500, ROTATION_MS));
+						rotationTimer = window.setTimeout(() => {
+							if (destroyed) return;
+							void loadPool(true);
+						}, delayMs);
+					};
+
+					const applyFromPayload = async (data: WallpaperPayload) => {
+						payload = data;
+						hud.classList.remove('hidden');
+						hud.classList.add('inline-flex');
+
+						const slotInfo = computeSlot(data.items.length);
+						const pref = readPref();
+						if (pref.mode === 'default') {
+							showDefaultLayer();
+							scheduleNextSlot();
+							return;
+						}
+
+						let targetIndex = slotInfo.activeIndex;
+						let isManual = false;
+						if (pref.mode === 'manual' && pref.slot === slotInfo.slot) {
+							targetIndex = pref.index % data.items.length;
+							isManual = true;
+						} else if (pref.mode === 'manual') {
+							// Slot advanced past the user's manual pick: resume automatic 4h rotation.
+							writePref({ mode: 'auto' });
+						}
+
+						const ok = await showWallpaperAt(targetIndex, isManual);
+						if (!ok && data.items.length > 1) {
+							await showWallpaperAt((targetIndex + 1) % data.items.length, false);
+						}
+						scheduleNextSlot();
+					};
+
+					const fetchPool = async (forceFresh = false): Promise<WallpaperPayload | null> => {
+						const cached = win.__heroWallpaperCache as
+							| { fetchedAt: number; slot: number; data: WallpaperPayload }
+							| undefined;
+						const nowSlot = Math.floor(Date.now() / ROTATION_MS);
+						if (
+							!forceFresh &&
+							cached &&
+							cached.slot === nowSlot &&
+							Date.now() - cached.fetchedAt < CACHE_TTL_MS
+						) {
+							return cached.data;
+						}
+
+						const response = await fetch(apiUrl, {
+							headers: { Accept: 'application/json' },
+							signal: abortController.signal,
+						});
+						if (!response.ok) return null;
+						const data = (await response.json()) as WallpaperPayload;
+						if (!data || !Array.isArray(data.items) || data.items.length === 0) return null;
+
+						win.__heroWallpaperCache = {
+							fetchedAt: Date.now(),
+							slot: nowSlot,
+							data,
+						};
+						return data;
+					};
+
+					const loadPool = async (forceFresh = false) => {
+						try {
+							const data = await fetchPool(forceFresh);
+							if (!data || destroyed) return;
+							await applyFromPayload(data);
+						} catch {
+							// Silently keep the local default hero illustration on offline/local preview.
+						}
+					};
+
+					nextBtn.addEventListener('click', async () => {
+						if (!payload || !payload.items.length) return;
+						const count = payload.items.length;
+						const slotInfo = computeSlot(count);
+						const startIdx = showingDefault ? slotInfo.activeIndex : (currentIndex + 1) % count;
+						const attempts = Math.min(3, count);
+						for (let offset = 0; offset < attempts; offset += 1) {
+							const candidateIdx = (startIdx + offset) % count;
+							const ok = await showWallpaperAt(candidateIdx, true);
+							if (ok) {
+								writePref({ mode: 'manual', slot: slotInfo.slot, index: candidateIdx });
+								return;
+							}
+						}
+					});
+
+					toggleBtn.addEventListener('click', async () => {
+						if (!payload || !payload.items.length) return;
+						if (showingDefault) {
+							writePref({ mode: 'auto' });
+							const slotInfo = computeSlot(payload.items.length);
+							await showWallpaperAt(slotInfo.activeIndex, false);
+						} else {
+							writePref({ mode: 'default' });
+							showDefaultLayer();
+						}
+					});
+
+					const cleanup = () => {
+						destroyed = true;
+						clearRotationTimer();
+						abortController.abort();
+					};
+
+					document.addEventListener('astro:before-swap', cleanup, { once: true });
+					void loadPool(false);
+				};
+
+				win.__heroWallpaperInit = initHeroWallpaper;
+				if (!win.__heroWallpaperPageLoadBound) {
+					win.__heroWallpaperPageLoadBound = true;
+					document.addEventListener('astro:page-load', () => {
+						if (typeof win.__heroWallpaperInit === 'function') win.__heroWallpaperInit();
+					});
+				}
+				initHeroWallpaper();
 			})();
 		</script>
 

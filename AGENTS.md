@@ -9,7 +9,8 @@ inside a subdirectory takes precedence for files in that subtree.
 - The public site is the static Astro application at the repository root and is
   deployed to the Cloudflare Pages project `alexblog`.
 - The only dynamic backend is `workers/cms-api`, mounted at `/admin/api/*`
-  plus the exact public read-only route `/api/github-daily`.
+  plus the exact public read-only routes `/api/github-daily` and
+  `/api/wallpaper`.
 - `docs/PROJECT-PLAN.md` and the current implementation are authoritative.
   Files under `docs/superpowers/` are historical design records, not executable
   instructions.
@@ -43,8 +44,8 @@ inside a subdirectory takes precedence for files in that subtree.
   an absent or unexpected `Origin`.
 - Every content/media/deploy API route must require an authenticated session
   whose GitHub account has `write`, `maintain`, or `admin` repository access.
-- `/api/github-daily` must remain GET/HEAD-only, must not expose README source
-  text or credentials, and must not add permissive CORS.
+- `/api/github-daily` and `/api/wallpaper` must remain GET/HEAD-only, must not
+  expose README source text or credentials, and must not add permissive CORS.
 - Preserve OAuth `state`, secure `__Host-` cookies, bounded session lifetime,
   SHA-based optimistic concurrency, bounded request bodies, image magic-byte
   checks, and structured non-secret error responses.

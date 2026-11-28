@@ -12,6 +12,10 @@
     {
       "pattern": "letsgogogogogo.pp.ua/api/github-daily",
       "zone_name": "letsgogogogogo.pp.ua"
+    },
+    {
+      "pattern": "letsgogogogogo.pp.ua/api/wallpaper",
+      "zone_name": "letsgogogogogo.pp.ua"
     }
   ],
   "kv_namespaces": [

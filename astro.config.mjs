@@ -166,7 +166,7 @@ export default defineConfig({
 				"default-src 'self'",
 				"base-uri 'self'",
 				"object-src 'none'",
-				"img-src 'self' data: https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com",
+				"img-src 'self' data: https://github.com https://avatars.githubusercontent.com https://*.githubusercontent.com https://w.wallhaven.cc",
 				"font-src 'self' data:",
 				"connect-src 'self' https://api.github.com https://cloudflareinsights.com",
 				"frame-src https://giscus.app",

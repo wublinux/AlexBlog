@@ -1,7 +1,7 @@
 # AlexBlog Worker API
 
 Cloudflare Worker for the private `/admin` content-management interface and
-the public, read-only `/api/github-daily` feed.
+the public, read-only `/api/github-daily` and `/api/wallpaper` feeds.
 
 ## One-time Cloudflare setup
 
@@ -31,11 +31,15 @@ Only repository collaborators with `write`, `maintain`, or `admin` permission
 can open a CMS session. The OAuth access token is stored only in the session KV
 record and expires with the session.
 
-GitHub Daily runs at 01:00 and 08:00 UTC (09:00 and 16:00 Asia/Hong_Kong).
-Each run searches public repositories created in the preceding 24 hours, reads
-bounded README excerpts, generates Chinese summaries through the Workers AI
-binding, and atomically replaces the latest KV snapshot. A failed source refresh
-does not overwrite the last successful snapshot.
+GitHub Daily and the homepage anime wallpaper pool refresh at 01:00 and 08:00 UTC
+(09:00 and 16:00 Asia/Hong_Kong) with isolated error handling.
+Each GitHub Daily run searches public repositories created in the preceding 24 hours,
+reads bounded README excerpts, generates Chinese summaries through the Workers AI
+binding, and atomically replaces `github-daily:latest:v1`.
+Each wallpaper run fetches Wallhaven SFW pure-anime landscape toplists (`categories=010`,
+`purity=100`, `>=1920x1080`, `16x9`/`16x10`, bounded file size), atomically replaces
+`wallpaper:latest:v1`, and `/api/wallpaper` rotates deterministically every 4 hours.
+A failed source refresh never overwrites the last successful snapshot.
 
 ## Local development
 
