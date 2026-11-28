@@ -1,0 +1,19 @@
+---
+import PetManager from '../../components/admin/PetManager';
+import AdminLayout from '../../layouts/AdminLayout.astro';
+---
+
+<AdminLayout title="皮蛋管理" active="pet">
+	<main class="admin-main admin-shell">
+		<header class="admin-page-header">
+			<div>
+				<p class="admin-eyebrow">Pidan companion studio</p>
+				<h1 class="admin-title">皮蛋审核与配置</h1>
+				<p class="admin-subtitle">
+					在这里直接审核、修改或隐藏皮蛋每张萌照卡的标题、台词与描述，上传裁切新照片，或调整 Q 版皮蛋的全部互动气泡文案。保存后自动触发线上发布。
+				</p>
+			</div>
+		</header>
+		<PetManager client:load />
+	</main>
+</AdminLayout>

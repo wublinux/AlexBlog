@@ -84,3 +84,159 @@ export function isSupportedImage(bytes: Uint8Array, extension: string): boolean 
   }
   return false;
 }
+
+const PET_IMAGE_PATH_PATTERN =
+  /^image\/pet\/(?:cards\/)?[\p{L}\p{N}._-]+\.(?:webp|jpe?g|png|gif|avif)$/iu;
+const PET_CARD_ID_PATTERN = /^[a-z0-9][a-z0-9_-]{0,63}$/i;
+
+const DIALOGUE_LIST_KEYS = [
+  'greet',
+  'pet',
+  'petCombo',
+  'feed',
+  'sleep',
+  'wake',
+  'drag',
+  'drop',
+  'fastScroll',
+] as const;
+
+const DIALOGUE_SINGLE_KEYS = [
+  'collarOn',
+  'collarOff',
+  'milestone25',
+  'milestone50',
+  'milestone85',
+  'milestone100',
+  'toReal',
+  'toChibi',
+] as const;
+
+export interface ValidatedPidanCard {
+  id: string;
+  enabled: boolean;
+  title: string;
+  badge: string;
+  image: string;
+  quote: string;
+  caption: string;
+}
+
+export interface ValidatedPidanConfig {
+  profile: {
+    name: string;
+    subtitle: string;
+    collarLabel: string;
+  };
+  cards: ValidatedPidanCard[];
+  dialogues: Record<(typeof DIALOGUE_LIST_KEYS)[number], string[]> &
+    Record<(typeof DIALOGUE_SINGLE_KEYS)[number], string>;
+}
+
+function boundedString(
+  raw: unknown,
+  field: string,
+  minLength: number,
+  maxLength: number,
+): string {
+  if (typeof raw !== 'string') {
+    throw new HttpError(422, 'invalid_pet_config', `字段 ${field} 必须是文本。`);
+  }
+  const trimmed = raw.normalize('NFC').trim();
+  if (trimmed.length < minLength || trimmed.length > maxLength) {
+    throw new HttpError(
+      422,
+      'invalid_pet_config',
+      `字段 ${field} 长度需在 ${minLength}–${maxLength} 个字符之间。`,
+    );
+  }
+  return trimmed;
+}
+
+export function validatePidanConfig(raw: unknown): ValidatedPidanConfig {
+  if (!raw || typeof raw !== 'object') {
+    throw new HttpError(422, 'invalid_pet_config', '皮蛋配置格式无效。');
+  }
+  const source = raw as Record<string, unknown>;
+  const rawProfile =
+    source.profile && typeof source.profile === 'object'
+      ? (source.profile as Record<string, unknown>)
+      : null;
+  if (!rawProfile) {
+    throw new HttpError(422, 'invalid_pet_config', '缺少宠物基础档案配置。');
+  }
+
+  const profile = {
+    name: boundedString(rawProfile.name, 'profile.name', 1, 24),
+    subtitle: boundedString(rawProfile.subtitle, 'profile.subtitle', 1, 60),
+    collarLabel: boundedString(rawProfile.collarLabel ?? '小鱼圈', 'profile.collarLabel', 1, 16),
+  };
+
+  if (!Array.isArray(source.cards) || source.cards.length === 0 || source.cards.length > 60) {
+    throw new HttpError(422, 'invalid_pet_config', '萌照卡片数量需在 1–60 张之间。');
+  }
+
+  const seenIds = new Set<string>();
+  const cards: ValidatedPidanCard[] = source.cards.map((item, idx) => {
+    if (!item || typeof item !== 'object') {
+      throw new HttpError(422, 'invalid_pet_config', `第 ${idx + 1} 张卡片格式无效。`);
+    }
+    const card = item as Record<string, unknown>;
+    const id = boundedString(card.id, `cards[${idx}].id`, 1, 64);
+    if (!PET_CARD_ID_PATTERN.test(id)) {
+      throw new HttpError(422, 'invalid_pet_config', `卡片 ID "${id}" 仅允许字母、数字、连字符或下划线。`);
+    }
+    if (seenIds.has(id)) {
+      throw new HttpError(422, 'invalid_pet_config', `卡片 ID "${id}" 重复。`);
+    }
+    seenIds.add(id);
+
+    const image = boundedString(card.image, `cards[${idx}].image`, 5, 180);
+    if (image.includes('..') || !PET_IMAGE_PATH_PATTERN.test(image)) {
+      throw new HttpError(
+        422,
+        'invalid_pet_image',
+        `第 ${idx + 1} 张卡片图片路径必须位于 image/pet/ 目录且为安全图片格式。`,
+      );
+    }
+
+    return {
+      id,
+      enabled: card.enabled !== false,
+      title: boundedString(card.title, `cards[${idx}].title`, 1, 40),
+      badge: boundedString(card.badge ?? '', `cards[${idx}].badge`, 0, 24),
+      image,
+      quote: boundedString(card.quote ?? '', `cards[${idx}].quote`, 0, 140),
+      caption: boundedString(card.caption ?? '', `cards[${idx}].caption`, 0, 220),
+    };
+  });
+
+  if (!cards.some((c) => c.enabled)) {
+    throw new HttpError(422, 'invalid_pet_config', '至少需要启用 1 张展示中的萌照卡片。');
+  }
+
+  const rawDialogues =
+    source.dialogues && typeof source.dialogues === 'object'
+      ? (source.dialogues as Record<string, unknown>)
+      : null;
+  if (!rawDialogues) {
+    throw new HttpError(422, 'invalid_pet_config', '缺少互动台词配置。');
+  }
+
+  const dialogues = {} as ValidatedPidanConfig['dialogues'];
+  for (const key of DIALOGUE_LIST_KEYS) {
+    const arr = rawDialogues[key];
+    if (!Array.isArray(arr) || arr.length === 0 || arr.length > 20) {
+      throw new HttpError(422, 'invalid_pet_config', `台词组 ${key} 需包含 1–20 条台词。`);
+    }
+    dialogues[key] = arr.map((line, idx) =>
+      boundedString(line, `dialogues.${key}[${idx}]`, 1, 140),
+    );
+  }
+
+  for (const key of DIALOGUE_SINGLE_KEYS) {
+    dialogues[key] = boundedString(rawDialogues[key], `dialogues.${key}`, 1, 140);
+  }
+
+  return { profile, cards, dialogues };
+}

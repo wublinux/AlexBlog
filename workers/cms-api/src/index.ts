@@ -11,6 +11,7 @@ import {
 import { handleAuth } from './routes/auth';
 import { handleDeploy } from './routes/deploy';
 import { handleMedia } from './routes/media';
+import { handlePet } from './routes/pet';
 import { handlePosts } from './routes/posts';
 
 export default {
@@ -62,6 +63,9 @@ export default {
       }
       if (pathname === '/admin/api/media' || pathname === '/admin/api/media/upload') {
         return await handleMedia(request, env);
+      }
+      if (pathname === '/admin/api/pet' || pathname === '/admin/api/pet/upload') {
+        return await handlePet(request, env);
       }
       if (pathname === '/admin/api/deploy/status') {
         return await handleDeploy(request, env);

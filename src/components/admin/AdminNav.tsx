@@ -3,7 +3,7 @@ import { fetchCurrentUser, logout, type UserInfo } from '../../lib/admin/auth';
 import DeployStatus from './DeployStatus';
 
 interface Props {
-  active: 'posts' | 'media' | 'editor' | 'none';
+  active: 'posts' | 'media' | 'pet' | 'editor' | 'none';
 }
 
 export default function AdminNav({ active }: Props) {
@@ -42,6 +42,13 @@ export default function AdminNav({ active }: Props) {
           href="/admin/media/"
         >
           媒体
+        </a>
+        <a
+          className="admin-nav__link"
+          aria-current={active === 'pet' ? 'page' : undefined}
+          href="/admin/pet/"
+        >
+          皮蛋
         </a>
         <a className="admin-nav__link" href="/" target="_blank">
           查看博客

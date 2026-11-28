@@ -1,0 +1,226 @@
+{
+  "profile": {
+    "name": "皮蛋",
+    "subtitle": "海豹重点色长毛陪读猫",
+    "collarLabel": "小鱼圈"
+  },
+  "cards": [
+    {
+      "id": "armchair-sun",
+      "enabled": true,
+      "title": "太师椅晒太阳",
+      "badge": "午后大佬",
+      "image": "image/pet/cards/pidan-13-armchair-sun.webp",
+      "quote": "这把椅子归皮蛋了，晒着太阳刚刚好。",
+      "caption": "坐在木椅上把下巴搭着扶手，迎着阳光眯起蓝眼睛。"
+    },
+    {
+      "id": "faceplant-nap",
+      "enabled": true,
+      "title": "埋头熟睡",
+      "badge": "倒栽葱",
+      "image": "image/pet/cards/pidan-14-faceplant-nap.webp",
+      "quote": "光线太亮啦，把脸埋进毯子里继续睡……",
+      "caption": "整张小脸埋进毛绒毯里呼呼大睡，只露出两只深色小耳朵。"
+    },
+    {
+      "id": "bowl-wait",
+      "enabled": true,
+      "title": "守碗等饭",
+      "badge": "准点打卡",
+      "image": "image/pet/cards/pidan-15-bowl-wait.webp",
+      "quote": "盯——碗就在这儿，你懂皮蛋意思吧？",
+      "caption": "乖巧蹲在饭碗旁边抬头盯着镜头。"
+    },
+    {
+      "id": "bowl-feast",
+      "enabled": true,
+      "title": "埋头干饭",
+      "badge": "认真炫饭",
+      "image": "image/pet/cards/pidan-16-bowl-feast.webp",
+      "quote": "干饭不积极，思想有问题！",
+      "caption": "蓬松的大围脖贴着碗边，专心埋头进食中。"
+    },
+    {
+      "id": "sleepy-paws",
+      "enabled": true,
+      "title": "揣爪小憩",
+      "badge": "困意朦胧",
+      "image": "image/pet/cards/pidan-17-sleepy-paws.webp",
+      "quote": "眼皮好沉……再陪你眯五分钟。",
+      "caption": "伸着毛茸茸的前爪趴卧休息，睡眼惺忪。"
+    },
+    {
+      "id": "closeup-gaze",
+      "enabled": true,
+      "title": "安静凝视",
+      "badge": "近景特写",
+      "image": "image/pet/cards/pidan-18-closeup-gaze.webp",
+      "quote": "皮蛋在呢，今天过得怎么样？",
+      "caption": "凑近镜头的柔和特写，小黑脸与白色耳毛分明。"
+    },
+    {
+      "id": "fluffy-onigiri",
+      "enabled": true,
+      "title": "蓬松端坐",
+      "badge": "炸毛腮帮",
+      "image": "image/pet/cards/pidan-01-fluffy-onigiri.webp",
+      "quote": "本喵这不是胖，是腮帮子毛量富裕！",
+      "caption": "两侧脸颊长毛蓬松展开，端坐直视镜头。"
+    },
+    {
+      "id": "sapphire-closeup",
+      "enabled": true,
+      "title": "冰蓝瞳仁",
+      "badge": "怼脸特写",
+      "image": "image/pet/cards/pidan-02-sapphire-closeup.webp",
+      "quote": "盯——今天也有认真看文章吗？",
+      "caption": "近距离光线下的蓝色眼睛与雪白长胡须。"
+    },
+    {
+      "id": "donut-collar",
+      "enabled": true,
+      "title": "小鱼软圈",
+      "badge": "限定造型",
+      "image": "image/pet/cards/pidan-03-donut-collar.webp",
+      "quote": "圈上的小鱼怎么吃不到喵……",
+      "caption": "戴着印有小鱼图案的浅蓝软垫圈，睁着圆眼睛。"
+    },
+    {
+      "id": "cheek-poke",
+      "enabled": true,
+      "title": "戳戳脸颊",
+      "badge": "乖巧黑爪",
+      "image": "image/pet/cards/pidan-04-cheek-poke.webp",
+      "quote": "戳一下收一条小鱼干，童叟无欺～",
+      "caption": "伸出深色前爪趴好，被手指轻轻戳着蓬松脸颊。"
+    },
+    {
+      "id": "playful-hunt",
+      "enabled": true,
+      "title": "歪头仰望",
+      "badge": "好奇锁定",
+      "image": "image/pet/cards/pidan-05-playful-hunt.webp",
+      "quote": "上面有什么好玩的？准备起跳！",
+      "caption": "坐在木地板上歪起脑袋向上张望。"
+    },
+    {
+      "id": "boba-stare",
+      "enabled": true,
+      "title": "圆瞳凝视",
+      "badge": "好奇拉满",
+      "image": "image/pet/cards/pidan-06-boba-stare.webp",
+      "quote": "你手里是不是藏好吃的了？",
+      "caption": "圆溜溜的大瞳孔近距离低角度注视。"
+    },
+    {
+      "id": "belly-flop",
+      "enabled": true,
+      "title": "地板躺平",
+      "badge": "悠闲时刻",
+      "image": "image/pet/cards/pidan-07-belly-flop.webp",
+      "quote": "路过先摸摸皮蛋再走嘛～",
+      "caption": "侧躺在木地板上舒展长毛，转头看向镜头。"
+    },
+    {
+      "id": "majestic-mane",
+      "enabled": true,
+      "title": "大围脖仰角",
+      "badge": "气场全开",
+      "image": "image/pet/cards/pidan-08-majestic-mane.webp",
+      "quote": "本喵罩着你读完这篇！",
+      "caption": "仰拍视角下丰厚的纯白胸毛围脖与蓝眼睛。"
+    },
+    {
+      "id": "squint-judge",
+      "enabled": true,
+      "title": "眯眼端坐",
+      "badge": "淡定审视",
+      "image": "image/pet/cards/pidan-09-squint-judge.webp",
+      "quote": "嗯……皮蛋已经看透一切了。",
+      "caption": "端坐在床头微微眯起眼睛，神态淡定。"
+    },
+    {
+      "id": "marshmallow-top",
+      "enabled": true,
+      "title": "俯视毛团",
+      "badge": "圆润饱满",
+      "image": "image/pet/cards/pidan-10-marshmallow-top.webp",
+      "quote": "俯看更圆润？那叫黄金比例喵！",
+      "caption": "俯拍视角下圆滚滚的一团长毛，仰头望向镜头。"
+    },
+    {
+      "id": "sniff-cam",
+      "enabled": true,
+      "title": "凑近嗅探",
+      "badge": "贴脸瞬间",
+      "image": "image/pet/cards/pidan-11-sniff-cam.webp",
+      "quote": "嗅嗅……来看看今天是谁在逛博客！",
+      "caption": "小黑鼻子凑近镜头的抓拍瞬间。"
+    },
+    {
+      "id": "toasted-loaf",
+      "enabled": true,
+      "title": "奶咖背影",
+      "badge": "安静趴卧",
+      "image": "image/pet/cards/pidan-12-toasted-loaf.webp",
+      "quote": "本喵只是背过去思考喵生，没在生气。",
+      "caption": "趴卧时的奶咖色蓬松背毛与深色耳尖。"
+    }
+  ],
+  "dialogues": {
+    "greet": [
+      "喵～我是皮蛋，陪你一起逛博客！",
+      "皮蛋已就位，点我可以撸毛或看真猫萌照哦～",
+      "呼噜噜……今天想先看哪一篇？"
+    ],
+    "pet": [
+      "呼噜呼噜～下巴再挠两下！",
+      "喵呜！围脖毛都被你揉蓬松啦 ♥",
+      "手感认证：100% 纯天然长毛毛团！",
+      "耳朵动了动～皮蛋心情值 +10！",
+      "摸摸挖煤小脸，今天也要开心喵～"
+    ],
+    "petCombo": [
+      "连环撸猫！！皮蛋要融化成猫饼啦 ♥",
+      "呼噜声已开到最大档——咕噜咕噜咕噜！",
+      "再摸下去就要躺平翻肚皮咯！"
+    ],
+    "feed": [
+      "嗷呜！是香喷喷的小鱼干！🐟",
+      "咔嚓咔嚓……皮蛋宣布你是今日最佳投喂官！",
+      "吃完这口小鱼干，再陪你读十篇！✨"
+    ],
+    "sleep": [
+      "呼噜……梦里全是小鱼干……Zzz",
+      "揣手手打个盹，你慢慢看～",
+      "团成一团安静充电中……"
+    ],
+    "wake": [
+      "喵呜？皮蛋没睡，皮蛋只是闭眼思考！",
+      "伸个大懒腰～满血复活！"
+    ],
+    "drag": [
+      "喵嗷？！被拎起来啦！",
+      "腾空啦！轻点放我下来喵～",
+      "飞天皮蛋巡逻中——"
+    ],
+    "drop": [
+      "啪嗒！四只小黑爪稳稳落地！",
+      "抖抖大围脖，发型不能乱～"
+    ],
+    "fastScroll": [
+      "哇啊啊滑太快啦，皮蛋的飞机耳要起飞了！",
+      "小短腿倒腾冒烟啦，慢点滑喵～",
+      "呼呼——差点没追上你的手速！"
+    ],
+    "collarOn": "戴上小鱼软圈啦！是不是和照片里一样？🍩",
+    "collarOff": "摘下小鱼圈，露出皮蛋蓬松的白围脖！✨",
+    "milestone25": "已经读完 1/4 啦，皮蛋在旁边乖巧陪读～",
+    "milestone50": "进度过半！摸摸皮蛋休息两秒吧 ✨",
+    "milestone85": "快读完咯，皮蛋竖起耳朵听重点！",
+    "milestone100": "🎉 整篇读完啦！皮蛋给你摇大尾巴撒花！",
+    "toReal": "变身！给你看真实世界的皮蛋本尊 📸",
+    "toChibi": "切回 Q 版皮蛋，继续在页面底下散步陪你啦 🐾"
+  }
+}

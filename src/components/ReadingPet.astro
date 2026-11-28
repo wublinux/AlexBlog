@@ -3,11 +3,14 @@ import { PIDAN_DIALOGUES, PIDAN_PHOTO_CARDS, PIDAN_PROFILE } from '../data/pet/p
 import { serializeJsonLd } from '../utils/seo';
 
 const BASE = import.meta.env.BASE_URL;
-const cardsPayload = PIDAN_PHOTO_CARDS.map((card) => ({
+const configUrl = `${BASE}image/pet/pidan-config.json`;
+const cardsPayload = PIDAN_PHOTO_CARDS.filter((card) => card.enabled !== false).map((card) => ({
 	...card,
 	src: `${BASE}${card.image}`,
 }));
 const pidanConfigJson = serializeJsonLd({
+	baseUrl: BASE,
+	configUrl,
 	cardsPayload,
 	dialogues: PIDAN_DIALOGUES,
 });
@@ -52,9 +55,9 @@ const pidanConfigJson = serializeJsonLd({
 				<span>投喂</span>
 				<span class="pidan-fish-count" data-pidan-fish-count hidden>0</span>
 			</button>
-			<button type="button" class="pidan-tool-btn" data-pidan-collar title="戴/摘小鱼甜甜圈">
+			<button type="button" class="pidan-tool-btn" data-pidan-collar title="戴/摘小鱼圈">
 				<span aria-hidden="true">🍩</span>
-				<span>小鱼圈</span>
+				<span data-pidan-collar-label>{PIDAN_PROFILE.collarLabel}</span>
 			</button>
 			<button type="button" class="pidan-tool-btn pidan-tool-btn-accent" data-pidan-to-real title="切换到真实皮蛋萌照卡">
 				<span aria-hidden="true">📸</span>
@@ -370,8 +373,8 @@ const pidanConfigJson = serializeJsonLd({
 		<div class="pidan-real-header">
 			<div class="pidan-real-brand">
 				<span class="pidan-real-dot" aria-hidden="true"></span>
-				<span class="pidan-real-title">皮蛋 · 真猫本尊</span>
-				<span class="pidan-real-counter" data-pidan-card-index>1 / 12</span>
+				<span class="pidan-real-title" data-pidan-real-title>{PIDAN_PROFILE.name} · 真猫本尊</span>
+				<span class="pidan-real-counter" data-pidan-card-index>1 / {cardsPayload.length}</span>
 			</div>
 			<div class="pidan-real-header-actions">
 				<button type="button" class="pidan-mode-chip" data-pidan-to-chibi title="切回 Q 版动态皮蛋">
@@ -438,12 +441,19 @@ const pidanConfigJson = serializeJsonLd({
 <script>
 	(() => {
 		const configEl = document.getElementById('pidan-config');
-		let parsedConfig: { cardsPayload?: any[]; dialogues?: any } = {};
+		let parsedConfig: {
+			baseUrl?: string;
+			configUrl?: string;
+			cardsPayload?: any[];
+			dialogues?: any;
+		} = {};
 		try {
 			parsedConfig = JSON.parse(configEl?.textContent || '{}');
 		} catch {}
-		const cardsPayload = Array.isArray(parsedConfig.cardsPayload) ? parsedConfig.cardsPayload : [];
-		const dialogues = parsedConfig.dialogues || { greet: [], idle: [], happy: [], sleep: [] };
+		const baseUrl = typeof parsedConfig.baseUrl === 'string' ? parsedConfig.baseUrl : '/';
+		const remoteConfigUrl = typeof parsedConfig.configUrl === 'string' ? parsedConfig.configUrl : '';
+		let cardsPayload = Array.isArray(parsedConfig.cardsPayload) ? parsedConfig.cardsPayload : [];
+		let dialogues = parsedConfig.dialogues || { greet: [], idle: [], happy: [], sleep: [] };
 
 		const STORAGE_KEY = 'alexblog_pidan_v1';
 
@@ -637,16 +647,24 @@ const pidanConfigJson = serializeJsonLd({
 					}
 				}
 				if (cardIndexEl) cardIndexEl.textContent = `${state.photoIndex + 1} / ${cardsPayload.length}`;
-				if (cardBadgeEl) cardBadgeEl.textContent = card.badge;
+				if (cardBadgeEl) {
+					cardBadgeEl.textContent = card.badge || '';
+					cardBadgeEl.hidden = !card.badge;
+				}
 				if (cardTitleEl) cardTitleEl.textContent = card.title;
-				if (cardQuoteEl) cardQuoteEl.textContent = `「${card.quote}」`;
-				if (cardCaptionEl) cardCaptionEl.textContent = card.caption;
+				if (cardQuoteEl) {
+					cardQuoteEl.textContent = card.quote ? `「${card.quote}」` : '';
+					cardQuoteEl.hidden = !card.quote;
+				}
+				if (cardCaptionEl) cardCaptionEl.textContent = card.caption || '';
 				if (lightboxImg) {
 					lightboxImg.src = card.src;
 					lightboxImg.alt = card.title;
 				}
-				if (lightboxTitle) lightboxTitle.textContent = `${card.title} · ${card.badge}`;
-				if (lightboxCaption) lightboxCaption.textContent = card.caption;
+				if (lightboxTitle) {
+					lightboxTitle.textContent = card.badge ? `${card.title} · ${card.badge}` : card.title;
+				}
+				if (lightboxCaption) lightboxCaption.textContent = card.caption || '';
 			};
 
 			const syncVisibility = () => {
@@ -815,8 +833,8 @@ const pidanConfigJson = serializeJsonLd({
 				setPose('happy', 1500);
 				say(
 					state.collar
-						? '套上小鱼甜甜圈皮肤啦！是不是和照片里一模一样？🍩'
-						: '摘掉小鱼圈，露出皮蛋骄傲的纯白大围脖！✨',
+						? dialogues.collarOn || '戴上小鱼圈啦！🍩'
+						: dialogues.collarOff || '摘下小鱼圈，露出白围脖！✨',
 					3400
 				);
 			});
@@ -1071,6 +1089,46 @@ const pidanConfigJson = serializeJsonLd({
 			renderFishCount();
 			syncVisibility();
 			updateReadingAndScroll();
+
+			// Refresh config from static /image/pet/pidan-config.json if available
+			if (remoteConfigUrl) {
+				fetch(remoteConfigUrl, { headers: { Accept: 'application/json' } })
+					.then((res) => (res.ok ? res.json() : null))
+					.then((remote) => {
+						if (!remote || typeof remote !== 'object') return;
+						if (Array.isArray(remote.cards)) {
+							const validCards = remote.cards
+								.filter(
+									(c) =>
+										c &&
+										c.enabled !== false &&
+										typeof c.title === 'string' &&
+										typeof c.image === 'string' &&
+										/^image\/pet\/(?:cards\/)?[^/]+\.(?:webp|jpe?g|png|gif|avif)$/i.test(c.image)
+								)
+								.map((c) => ({ ...c, src: `${baseUrl}${c.image}` }));
+							if (validCards.length > 0) {
+								cardsPayload = validCards;
+								state.photoIndex = clamp(state.photoIndex, 0, cardsPayload.length - 1);
+								if (state.mode === 'real') renderCard(false);
+							}
+						}
+						if (remote.dialogues && typeof remote.dialogues === 'object') {
+							dialogues = { ...dialogues, ...remote.dialogues };
+						}
+						if (remote.profile && typeof remote.profile === 'object') {
+							const collarLabelEl = root.querySelector('[data-pidan-collar-label]');
+							const realTitleEl = root.querySelector('[data-pidan-real-title]');
+							if (collarLabelEl && typeof remote.profile.collarLabel === 'string') {
+								collarLabelEl.textContent = remote.profile.collarLabel;
+							}
+							if (realTitleEl && typeof remote.profile.name === 'string') {
+								realTitleEl.textContent = `${remote.profile.name} · 真猫本尊`;
+							}
+						}
+					})
+					.catch(() => {});
+			}
 
 			// Gentle first-visit greeting once per tab session
 			try {
